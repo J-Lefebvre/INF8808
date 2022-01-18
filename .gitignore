@@ -1,3 +1,7 @@
+# To avoid a catastrophy with 'npm start'
+dist
+.cache
+
 # compiled output
 /dist
 /tmp
