@@ -46,11 +46,15 @@ export function createGroups (data, x) {
   // TODO : Create the groups
   d3.selectAll('g.bar-group').remove()
   var graph = d3.select('#graph-g')
-  for (const act of data) {
+  // for each act
+  for (const [i, act] of data.entries()) {
     var xOffset = x(act.Act)
+    // create a group
     graph.append('g')
       .attr('transform', 'translate(' + xOffset + ',' + 0 + ')')
       .attr('class', 'bar-group')
+      // bind data to group for later use
+      .data([data[i]])
   }
 }
 
@@ -67,18 +71,26 @@ export function createGroups (data, x) {
 export function drawBars (y, xSubgroup, players, height, color, tip) {
   // TODO : Draw the bars
   d3.selectAll('g.bar-group')
+    // for each group
     .each(function (d) {
       var barWidth = xSubgroup.range()[1] / players.length
-      for (let i = 0; i < players.length; i++) {
-        var barHeight = 50
-        d3.select(this).append('rect')
-          .attr('x', barWidth * i)
-          .attr('y', height - barHeight)
-          .attr('width', barWidth)
-          .attr('height', barHeight)
-          .attr('fill', color(i))
-          .on('mouseover', tip.show)
-          .on('mouseout', tip.hide)
+      var groupData = d3.select(this).datum()
+      // for each player
+      for (const [i, player] of players.entries()) {
+        var playerObj = groupData.Players.find(x => x.Player === player)
+        // if player is in group
+        if (playerObj) {
+          var barHeight = playerObj.Count / y.domain()[0] * y.range()[1]
+          // add the bar
+          d3.select(this).append('rect')
+            .attr('x', barWidth * i)
+            .attr('y', height - barHeight)
+            .attr('width', barWidth)
+            .attr('height', barHeight)
+            .attr('fill', color(i))
+            .on('mouseover', tip.show)
+            .on('mouseout', tip.hide)
+        }
       }
     })
 }
