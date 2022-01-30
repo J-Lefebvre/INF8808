@@ -8,6 +8,11 @@
  */
 export function updateGroupXScale (scale, data, width) {
   // TODO : Set the domain and range of the groups' x scale
+  var domain = []
+  for (const act of data) {
+    domain.push(act.Act)
+  }
+  scale.domain(domain).range([0, width])
 }
 
 /**
@@ -19,6 +24,15 @@ export function updateGroupXScale (scale, data, width) {
  */
 export function updateYScale (scale, data, height) {
   // TODO : Set the domain and range of the graph's y scale
+  var maxLineCount = 0
+  for (const act of data) {
+    for (const player of act.Players) {
+      if (player.Count > maxLineCount) {
+        maxLineCount = player.Count
+      }
+    }
+  }
+  scale.domain([maxLineCount, 0]).range([0, height])
 }
 
 /**
@@ -30,7 +44,14 @@ export function updateYScale (scale, data, height) {
  */
 export function createGroups (data, x) {
   // TODO : Create the groups
-  d3.select('#graph-g')
+  d3.selectAll('g.bar-group').remove()
+  var graph = d3.select('#graph-g')
+  for (const act of data) {
+    var xOffset = x(act.Act)
+    graph.append('g')
+      .attr('transform', 'translate(' + xOffset + ',' + 0 + ')')
+      .attr('class', 'bar-group')
+  }
 }
 
 /**
@@ -45,5 +66,19 @@ export function createGroups (data, x) {
  */
 export function drawBars (y, xSubgroup, players, height, color, tip) {
   // TODO : Draw the bars
-  d3.select('#graph-g')
+  d3.selectAll('g.bar-group')
+    .each(function (d) {
+      var barWidth = xSubgroup.range()[1] / players.length
+      for (let i = 0; i < players.length; i++) {
+        var barHeight = 50
+        d3.select(this).append('rect')
+          .attr('x', barWidth * i)
+          .attr('y', height - barHeight)
+          .attr('width', barWidth)
+          .attr('height', barHeight)
+          .attr('fill', color(i))
+          .on('mouseover', tip.show)
+          .on('mouseout', tip.hide)
+      }
+    })
 }
