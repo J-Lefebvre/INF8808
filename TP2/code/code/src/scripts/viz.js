@@ -90,6 +90,7 @@ export function drawBars (y, xSubgroup, players, height, color, tip) {
             .attr('fill', color(i))
             .on('mouseover', tip.show)
             .on('mouseout', tip.hide)
+            .data([{ Act: groupData.Act, Player: playerObj }])
         }
       }
     })
