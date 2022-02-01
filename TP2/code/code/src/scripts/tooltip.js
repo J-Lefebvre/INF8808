@@ -17,7 +17,7 @@ export function getContents (d) {
   */
   const toolTipElement = d3.create()
   toolTipElement.append('div')
-    .append('p')
+    .append('label')
     .attr('id', 'tooltip-title')
     .text('Act ' + d.Act)
 
