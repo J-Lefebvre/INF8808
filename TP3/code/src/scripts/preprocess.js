@@ -6,7 +6,13 @@
  */
 export function getNeighborhoodNames (data) {
   // TODO: Return the neihborhood names
-  return []
+  var neighborhoodNames = new Set()
+  data.forEach(element => {
+    neighborhoodNames.add(element.Arrond_Nom)
+  });
+  console.log('neighborhoods names: ')
+  console.log(neighborhoodNames)
+  return neighborhoodNames
 }
 
 /**
@@ -19,11 +25,16 @@ export function getNeighborhoodNames (data) {
  */
 export function filterYears (data, start, end) {
   // TODO : Filter the data by years
-  return []
+  return data.filter(element => {
+      var elementYear = (element.Date_Plantation).getFullYear()
+      if(start <= elementYear && end >= elementYear) {
+        return elementYear
+      }
+  });
 }
 
 /**
- * Summarizes how any trees were planted each year in each neighborhood.
+ * Summarizes how many trees were planted each year in each neighborhood.
  *
  * @param {object[]} data The data set to use
  * @returns {object[]} A table of objects with keys 'Arrond_Nom', 'Plantation_Year' and 'Counts', containing
@@ -31,7 +42,22 @@ export function filterYears (data, start, end) {
  */
 export function summarizeYearlyCounts (data) {
   // TODO : Construct the required data table
-  return []
+  const dataMap = new Map()
+
+  data.forEach(element => {
+    var neighborhoodName = element.Arrond_Nom
+    var plantationYear = element.Date_Plantation.getFullYear()
+    var currentKey = neighborhoodName + plantationYear
+    var currentCount = 0
+    if(dataMap.get(currentKey)){
+      currentCount = dataMap.get(currentKey).Counts + 1
+    } else {
+      currentCount = 1
+    }
+    dataMap.set(currentKey, { Arrond_Nom: neighborhoodName, Plantation_Year: plantationYear, Counts: currentCount })
+  });
+
+  return Array.from(dataMap.values())
 }
 
 /**
@@ -48,5 +74,12 @@ export function summarizeYearlyCounts (data) {
  */
 export function fillMissingData (data, neighborhoods, start, end, range) {
   // TODO : Find missing data and fill with 0
-  return []
+  neighborhoods.forEach(neighborhood => {
+    range(start, end).forEach(year => {
+      if(!(data.find(element => element.Arrond_Nom == neighborhood && element.Plantation_Year == year))){
+        data.push({ Arrond_Nom: neighborhood, Plantation_Year: year, Counts: 0 })
+      }
+    })
+  });
+  return data
 }

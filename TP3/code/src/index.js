@@ -29,9 +29,15 @@ import * as d3Chromatic from 'd3-scale-chromatic'
   d3.csv('./arbres.csv', d3.autoType).then(function (data) {
     const neighborhoodNames = preproc.getNeighborhoodNames(data)
     data = preproc.filterYears(data, 2010, 2020)
+    console.log('filtered by date: ')
+    console.log(data)
 
     data = preproc.summarizeYearlyCounts(data)
+    console.log('Summerized: ')
+    console.log(data)
     data = preproc.fillMissingData(data, neighborhoodNames, 2010, 2020, util.range)
+    console.log('Filled Missing data: ')
+    console.log(data)
 
     viz.setColorScaleDomain(colorScale, data)
 
