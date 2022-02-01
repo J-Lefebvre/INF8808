@@ -10,8 +10,6 @@ export function getNeighborhoodNames (data) {
   data.forEach(element => {
     neighborhoodNames.add(element.Arrond_Nom)
   });
-  console.log('neighborhoods names: ')
-  console.log(neighborhoodNames)
   return neighborhoodNames
 }
 
