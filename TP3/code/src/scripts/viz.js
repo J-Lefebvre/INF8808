@@ -1,3 +1,12 @@
+// INF8808 - TP3
+// Groupe 4
+//
+// Clara Serruau - 2164678
+// Julien Dupuis - 1960997
+// Adam Prévost - 1947205
+// Jules Lefebvre - 1847158
+//
+import { max } from "d3";
 
 /**
  * Sets the domain of the color scale
@@ -7,6 +16,15 @@
  */
 export function setColorScaleDomain (colorScale, data) {
   // TODO : Set domain of color scale
+  // get the max value to bind it to the domain
+  // it is known the min value to be 0
+  let maxDomain = 0;
+  data.forEach(element => {
+    if(element.Comptes > maxDomain){
+      maxDomain = element.Counts;
+    }
+  })
+  colorScale.domain([0,maxDomain])
 }
 
 /**
@@ -16,6 +34,12 @@ export function setColorScaleDomain (colorScale, data) {
  */
 export function appendRects (data) {
   // TODO : Append SVG rect elements
+  var graph = d3.select('#graph-g')
+  data.forEach(element =>{
+    graph.append("g")
+      .append("svg")
+      .append("rect")
+  })
 }
 
 /**
@@ -28,6 +52,17 @@ export function appendRects (data) {
  */
 export function updateXScale (xScale, data, width, range) {
   // TODO : Update X scale
+  let minYear = Infinity
+  let maxYear = 0
+  data.forEach(element => {
+    if(element.Plantation_Year<minYear){
+      minYear=element.Plantation_Year
+    }
+    if(element.Plantation_Year>maxYear){
+      maxYear=element.Plantation_Year
+    }
+  })
+  xScale.domain(range(minYear,maxYear)).range([0, width])
 }
 
 /**
@@ -40,6 +75,9 @@ export function updateXScale (xScale, data, width, range) {
 export function updateYScale (yScale, neighborhoodNames, height) {
   // TODO : Update Y scale
   // Make sure to sort the neighborhood names alphabetically
+  neighborhoodNames.sort()
+  // neighborhoodNames.reverse()
+  yScale.domain(neighborhoodNames).range([0, height])
 }
 
 /**
@@ -49,6 +87,10 @@ export function updateYScale (yScale, neighborhoodNames, height) {
  */
 export function drawXAxis (xScale) {
   // TODO : Draw X axis
+  let x_axis = d3.select('.x.axis')
+  let x_axis_scale = d3.axisTop().scale(xScale);
+
+  x_axis.call(x_axis_scale);
 }
 
 /**
