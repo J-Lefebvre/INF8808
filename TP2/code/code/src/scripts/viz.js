@@ -1,4 +1,11 @@
-
+// INF8808 - TP2
+// Groupe 4
+//
+// Clara Serruau - 2164678
+// Julien Dupuis - 1960997
+// Adam Prévost - 1947205
+// Jules Lefebvre - 1847158
+//
 /**
  * Sets the domain and range of the X scale.
  *
