@@ -14,17 +14,17 @@ import { max } from "d3";
  * @param {*} colorScale The color scale used in the heatmap
  * @param {object[]} data The data to be displayed
  */
-export function setColorScaleDomain (colorScale, data) {
+export function setColorScaleDomain(colorScale, data) {
   // TODO : Set domain of color scale
   // get the max value to bind it to the domain
-  // it is known the min value to be 0
+  // it is known the min  for Counts to be 0 (cf fillMissingData function)
   let maxDomain = 0;
   data.forEach(element => {
-    if(element.Comptes > maxDomain){
+    if (element.Counts > maxDomain) {
       maxDomain = element.Counts;
     }
   })
-  colorScale.domain([0,maxDomain])
+  colorScale.domain([0, maxDomain])
 }
 
 /**
@@ -32,13 +32,17 @@ export function setColorScaleDomain (colorScale, data) {
  *
  * @param {object[]} data The data to use for binding
  */
-export function appendRects (data) {
+export function appendRects(data) {
   // TODO : Append SVG rect elements
+  // for every line of data, we create a <g class='#_year'> <svg> <rect> </rect> </svg> </g> structure
+  // I chose to store the year in the class of g (will be used in the update)
   var graph = d3.select('#graph-g')
-  data.forEach(element =>{
-    graph.append("g")
-      .append("svg")
-      .append("rect")
+  data.forEach(element => {
+    graph.append('g')
+      .attr('class', '_' + element.Plantation_Year.toString()) // used to distinguish between the g elemnt with x axis and y axis class at the same level
+      .append('svg')
+      .append('rect')
+      .data([element])
   })
 }
 
@@ -50,19 +54,20 @@ export function appendRects (data) {
  * @param {number} width The width of the diagram
  * @param {Function} range A utilitary funtion that could be useful to generate a list of numbers in a range
  */
-export function updateXScale (xScale, data, width, range) {
+export function updateXScale(xScale, data, width, range) {
   // TODO : Update X scale
+  // we want to be able to change the chosen years in the preprocess so we manually search for the start and end year
   let minYear = Infinity
   let maxYear = 0
   data.forEach(element => {
-    if(element.Plantation_Year<minYear){
-      minYear=element.Plantation_Year
+    if (element.Plantation_Year < minYear) {
+      minYear = element.Plantation_Year
     }
-    if(element.Plantation_Year>maxYear){
-      maxYear=element.Plantation_Year
+    if (element.Plantation_Year > maxYear) {
+      maxYear = element.Plantation_Year
     }
   })
-  xScale.domain(range(minYear,maxYear)).range([0, width])
+  xScale.domain(range(minYear, maxYear)).range([0, width])
 }
 
 /**
@@ -72,12 +77,11 @@ export function updateXScale (xScale, data, width, range) {
  * @param {string[]} neighborhoodNames The names of the neighborhoods
  * @param {number} height The height of the diagram
  */
-export function updateYScale (yScale, neighborhoodNames, height) {
+export function updateYScale(yScale, neighborhoodNames, height) {
   // TODO : Update Y scale
   // Make sure to sort the neighborhood names alphabetically
-  neighborhoodNames.sort()
-  // neighborhoodNames.reverse()
-  yScale.domain(neighborhoodNames).range([0, height])
+  // neighborhoodNames is a Set so we cast it to an Array which we sort (default is alphabetical)
+  yScale.domain([...neighborhoodNames].sort()).range([0, height])
 }
 
 /**
@@ -85,12 +89,10 @@ export function updateYScale (yScale, neighborhoodNames, height) {
  *
  *  @param {*} xScale The scale to use to draw the axis
  */
-export function drawXAxis (xScale) {
+export function drawXAxis(xScale) {
   // TODO : Draw X axis
-  let x_axis = d3.select('.x.axis')
-  let x_axis_scale = d3.axisTop().scale(xScale);
-
-  x_axis.call(x_axis_scale);
+  d3.select('.x.axis')
+    .call(d3.axisTop(xScale));
 }
 
 /**
@@ -99,15 +101,20 @@ export function drawXAxis (xScale) {
  * @param {*} yScale The scale to use to draw the axis
  * @param {number} width The width of the graphic
  */
-export function drawYAxis (yScale, width) {
+export function drawYAxis(yScale, width) {
   // TODO : Draw Y axis
+  d3.select('.y.axis')
+    .attr('transform', 'translate(' + width + ', 0)')
+    .call(d3.axisRight(yScale))
 }
 
 /**
  * Rotates the ticks on the X axis 45 degrees towards the left.
  */
-export function rotateXTicks () {
+export function rotateXTicks() {
   // TODO : Rotate X axis' ticks
+  d3.select('.x.axis').selectAll('g').selectAll('text')
+    .attr('transform', 'rotate(-45)')
 }
 
 /**
@@ -118,6 +125,37 @@ export function rotateXTicks () {
  * @param {*} yScale The y scale used to position the rectangles
  * @param {*} colorScale The color scale used to set the rectangles' colors
  */
-export function updateRects (xScale, yScale, colorScale) {
+export function updateRects(xScale, yScale, colorScale) {
   // TODO : Set position, size and fill of rectangles according to bound data
+  let years = xScale.domain() // [2010, 2011, ... , 2020]
+  let arrond = yScale.domain() // ['Ahuntsic - Cartierville', 'Côte-des-Neiges - Notre-Dame-de-Grâce', ..., 'Villeray-Saint-Michel - Parc-Extension']
+  let minYear = years[0] // 2010 
+
+  let width = xScale.range()[1] - xScale.range()[0] // to remain mathematicaly accurate ! (and true in case of a translation or anything)
+  let height = yScale.range()[1] - yScale.range()[0] // to remain mathematicaly accurate ! (and true in case of a translation or anything)
+
+  let rectWidth = width / years.length
+  let rectHeight = height / arrond.length
+
+  let xSmallSpace = 3 // we noticed the image in the TP subject let small spaces between the rect
+  let ySmallSpace = 6 // We tried different spacing values and chose those ones
+
+  let graph = d3.select('#graph-g')
+
+  years.forEach(year => {
+    graph.selectAll('._' + year.toString())
+      .each(function (d) { // we will draw column by column
+        let rect = d3.select(this).select('svg').select('rect')
+        let data = rect.data()
+        rect
+          .attr('x', (rectWidth * (year - minYear)) + (xSmallSpace / 2)) // to even out the spaces
+          .attr('y', (rectHeight * (arrond.indexOf(data[0].Arrond_Nom))) + (ySmallSpace / 2)) // to even out the spaces
+          .attr('width', rectWidth - xSmallSpace)
+          .attr('height', rectHeight - ySmallSpace)
+          .attr('fill', colorScale(data[0].Counts)) // the binding of the Count and the Color Sequence
+      })
+
+  })
+
+
 }
