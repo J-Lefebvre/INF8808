@@ -39,7 +39,6 @@ export function appendRects(data) {
   var graph = d3.select('#graph-g')
   data.forEach(element => {
     graph.append('g')
-      .attr('class', '_' + element.Plantation_Year.toString()) // used to distinguish between the g elemnt with x axis and y axis class at the same level
       .append('svg')
       .append('rect')
       .data([element])
@@ -127,35 +126,11 @@ export function rotateXTicks() {
  */
 export function updateRects(xScale, yScale, colorScale) {
   // TODO : Set position, size and fill of rectangles according to bound data
-  let years = xScale.domain() // [2010, 2011, ... , 2020]
-  let arrond = yScale.domain() // ['Ahuntsic - Cartierville', 'Côte-des-Neiges - Notre-Dame-de-Grâce', ..., 'Villeray-Saint-Michel - Parc-Extension']
-  let minYear = years[0] // 2010 
 
-  let width = xScale.range()[1] - xScale.range()[0] // to remain mathematicaly accurate ! (and true in case of a translation or anything)
-  let height = yScale.range()[1] - yScale.range()[0] // to remain mathematicaly accurate ! (and true in case of a translation or anything)
-
-  let rectWidth = width / years.length
-  let rectHeight = height / arrond.length
-
-  let xSmallSpace = 3 // we noticed the image in the TP subject let small spaces between the rect
-  let ySmallSpace = 6 // We tried different spacing values and chose those ones
-
-  let graph = d3.select('#graph-g')
-
-  years.forEach(year => {
-    graph.selectAll('._' + year.toString())
-      .each(function (d) { // we will draw column by column
-        let rect = d3.select(this).select('svg').select('rect')
-        let data = rect.data()
-        rect
-          .attr('x', (rectWidth * (year - minYear)) + (xSmallSpace / 2)) // to even out the spaces
-          .attr('y', (rectHeight * (arrond.indexOf(data[0].Arrond_Nom))) + (ySmallSpace / 2)) // to even out the spaces
-          .attr('width', rectWidth - xSmallSpace)
-          .attr('height', rectHeight - ySmallSpace)
-          .attr('fill', colorScale(data[0].Counts)) // the binding of the Count and the Color Sequence
-      })
-
-  })
-
-
+  d3.select('#graph-g').selectAll("rect")
+          .attr('x',d => xScale(d.Plantation_Year))
+          .attr('y', d => yScale(d.Arrond_Nom))
+          .attr('width', xScale.bandwidth())
+          .attr('height', yScale.bandwidth())
+          .attr('fill', d => colorScale(d.Counts))
 }
