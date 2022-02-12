@@ -6,6 +6,7 @@
 // Adam Prévost - 1947205
 // Jules Lefebvre - 1847158
 //
+
 /**
  * Initializes the definition for the gradient to use with the
  * given colorScale.
@@ -63,4 +64,26 @@ export function initLegendAxis () {
  */
 export function draw (x, y, height, width, fill, colorScale) {
   // TODO : Draw the legend
-}
+
+  // Fill in legend's color bar
+  d3.select('.legend.bar')
+    .attr('x', x)
+    .attr('y', y)
+    .attr('width', width)
+    .attr('height', height)
+    .style('fill', fill)
+
+  // Move scale to correct position
+  var legendAxis = d3.select('.legend.axis')
+  legendAxis.attr('transform', 'translate(' + x + ',' + y + ')')
+
+  // Create scale
+  var scale  = d3.scaleLinear()
+    .domain(colorScale.domain())
+    .range([height, 0])
+
+  // Apply & display scale
+  var nTicks = 7
+  var axis = d3.axisLeft(scale).ticks(nTicks)
+  legendAxis.call(axis)
+}   

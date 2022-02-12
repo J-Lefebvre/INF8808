@@ -34,14 +34,14 @@ export function setColorScaleDomain(colorScale, data) {
  */
 export function appendRects(data) {
   // TODO : Append SVG rect elements
-  // for every line of data, we create a <g class='#_year'> <svg> <rect> </rect> </svg> </g> structure
+  // for every line of data, we create a <g class='#_year'> <rect> </rect> </g> structure
   // I chose to store the year in the class of g (will be used in the update)
   var graph = d3.select('#graph-g')
   data.forEach(element => {
     graph.append('g')
-      .append('svg')
-      .append('rect')
+      .attr('class', 'data-square')
       .data([element])
+      .append('rect')
   })
 }
 
@@ -128,9 +128,9 @@ export function updateRects(xScale, yScale, colorScale) {
   // TODO : Set position, size and fill of rectangles according to bound data
 
   d3.select('#graph-g').selectAll("rect")
-          .attr('x',d => xScale(d.Plantation_Year))
-          .attr('y', d => yScale(d.Arrond_Nom))
-          .attr('width', xScale.bandwidth())
-          .attr('height', yScale.bandwidth())
-          .attr('fill', d => colorScale(d.Counts))
+    .attr('x',d => xScale(d.Plantation_Year))
+    .attr('y', d => yScale(d.Arrond_Nom))
+    .attr('width', xScale.bandwidth())
+    .attr('height', yScale.bandwidth())
+    .attr('fill', d => colorScale(d.Counts))
 }

@@ -22,6 +22,19 @@
  */
 export function setRectHandler (xScale, yScale, rectSelected, rectUnselected, selectTicks, unselectTicks) {
   // TODO : Select the squares and set their event handlers
+
+  d3.selectAll('#graph-g .data-square')
+    // Set handler for entering element
+    .on('mouseover', function () { 
+      rectSelected(this, xScale, yScale)
+      var data = d3.select(this).datum()
+      selectTicks(data.Arrond_Nom, data.Plantation_Year)
+    })
+    // Set handler for leaving element
+    .on('mouseout', function () {
+      rectUnselected(this)
+      unselectTicks()
+    })
 }
 
 /**
@@ -39,6 +52,25 @@ export function rectSelected (element, xScale, yScale) {
   // TODO : Display the number of trees on the selected element
   // Make sure the nimber is centered. If there are 1000 or more
   // trees, display the text in white so it contrasts with the background.
+
+  // Lower opacity
+  element.style.opacity = 0.75
+  // Retrieve data
+  var data = d3.select(element).datum() // d3?
+  var dimension = d3.select(element).node().getBBox()
+  // Display tree count
+  d3.select(element).append("text")
+    // Position text
+    .attr('x', xScale(data.Plantation_Year) + dimension.width / 2)
+    .attr('y', yScale(data.Arrond_Nom) + dimension.height / 2 + 5)
+    .attr('text-anchor', 'middle')
+    // Preven text from retriggering mouse events
+    .attr('pointer-events', 'none')
+    // Style text
+    .style('font-size', '12')
+    .style('font-family', 'Roboto')
+    .style('fill', (data.Counts < 1000 ? 'black' : 'white'))
+    .text(data.Counts)
 }
 
 /**
@@ -52,6 +84,11 @@ export function rectSelected (element, xScale, yScale) {
  */
 export function rectUnselected (element) {
   // TODO : Unselect the element
+
+  // Set opacity back to default
+  element.style.opacity = ''
+  // Remove tree count
+  d3.select(element).select("text").remove()
 }
 
 /**
@@ -62,6 +99,15 @@ export function rectUnselected (element) {
  */
 export function selectTicks (name, year) {
   // TODO : Make the ticks bold
+
+  // Find matching labels
+  var labels = d3.selectAll("g.axis text")._groups[0]
+  labels.forEach(element => {
+    if (element.__data__ === name || element.__data__ === year) {
+      // Make labels bold
+      element.style.fontWeight = 'bold'
+    }
+  })
 }
 
 /**
@@ -69,4 +115,12 @@ export function selectTicks (name, year) {
  */
 export function unselectTicks () {
   // TODO : Unselect the ticks
+
+  // Get all labels
+  var labels = d3.selectAll("g.axis text")._groups[0]
+  labels.forEach(element => {
+      // Set weight back to default
+      element.style.fontWeight = ''
+    }
+  )
 }
