@@ -34,8 +34,7 @@ export function setColorScaleDomain(colorScale, data) {
  */
 export function appendRects(data) {
   // TODO : Append SVG rect elements
-  // for every line of data, we create a <g class='#_year'> <rect> </rect> </g> structure
-  // I chose to store the year in the class of g (will be used in the update)
+  // for every line of data, we create a <g> <rect> </rect> </g> structure
   var graph = d3.select('#graph-g')
   data.forEach(element => {
     graph.append('g')
