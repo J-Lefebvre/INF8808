@@ -33,8 +33,16 @@ export function setRadiusScale (data) {
  * @returns {*} The ordinal scale used to determine the color
  */
 export function setColorScale (data) {
+  const continents = []
+  for (const year in data) {
+    for (const country of data[year]) {
+      if (continents.indexOf(country.Continent) === -1) {
+        continents.push(country.Continent)
+      } else {}
+    }
+  }
   return d3.scaleOrdinal()
-    .domain([0, 5]) // TODO : compter les continents
+    .domain([0, continents.length])
     .range(d3.schemeCategory10)
 }
 

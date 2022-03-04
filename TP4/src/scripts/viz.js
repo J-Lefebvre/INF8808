@@ -58,11 +58,13 @@ export function setCircleHoverHandler (tip) {
 export function moveCircles (xScale, yScale, transitionDuration) {
   // TODO : Set up the transition and place the circle centers
   // in x and y according to their GDP and CO2 respectively
+  /*
   selectAll('circle')
     .transition()
     .attr('cx', d => xScale(d.GDP))
     .attr('cy', d => yScale(d.CO2))
     .duration(transitionDuration)
+  */
 }
 
 /**
