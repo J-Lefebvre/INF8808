@@ -1,7 +1,7 @@
 /**
  * Defines the scale to use for the circle markers' radius.
  *
- * The radius of the circle is linearly proportinal to the population of the given country.
+ * The radius of the circle is linearly proportional to the population of the given country.
  *
  * The radius is a value defined in the interval [5, 20].
  *
@@ -9,8 +9,17 @@
  * @returns {*} The linear scale used to determine the radius
  */
 export function setRadiusScale (data) {
-  // TODO : Set scale
-  return {}
+  let maxPopulation = 0
+  for (const year in data) {
+    for (const country of data[year]) {
+      if (country.Population > maxPopulation) {
+        maxPopulation = country.Population
+      }
+    }
+  }
+  return d3.scaleLinear()
+    .domain([0, maxPopulation])
+    .range([5, 20])
 }
 
 /**
@@ -24,8 +33,9 @@ export function setRadiusScale (data) {
  * @returns {*} The ordinal scale used to determine the color
  */
 export function setColorScale (data) {
-  // TODO : Set scale
-  return {}
+  return d3.scaleOrdinal()
+    .domain([0, 5]) // TODO : compter les continents
+    .range(d3.schemeCategory10)
 }
 
 /**
@@ -33,11 +43,20 @@ export function setColorScale (data) {
  *
  * @param {number} width The width of the graph
  * @param {object} data The data to be used
- * @returns {*} The linear scale in X
+ * @returns {*} The log scale in X
  */
 export function setXScale (width, data) {
-  // TODO : Set scale
-  return {}
+  let maxGDP = 0
+  for (const year in data) {
+    for (const country of data[year]) {
+      if (country.GDP > maxGDP) {
+        maxGDP = country.GDP
+      }
+    }
+  }
+  return d3.scaleLog()
+    .domain([0, maxGDP])
+    .range([0, width])
 }
 
 /**
@@ -45,9 +64,18 @@ export function setXScale (width, data) {
  *
  * @param {number} height The height of the graph
  * @param {object} data The data to be used
- * @returns {*} The linear scale in Y
+ * @returns {*} The log scale in Y
  */
 export function setYScale (height, data) {
-  // TODO : Set scale
-  return {}
+  let maxCO2 = 0
+  for (const year in data) {
+    for (const country of data[year]) {
+      if (country.CO2 > maxCO2) {
+        maxCO2 = country.CO2
+      }
+    }
+  }
+  return d3.scaleLog()
+    .domain([maxCO2, 0])
+    .range([height, 0])
 }
