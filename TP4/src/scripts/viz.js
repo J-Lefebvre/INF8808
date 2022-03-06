@@ -1,5 +1,3 @@
-import { selectAll } from 'd3'
-
 /**
  * Positions the x axis label and y axis label.
  *
@@ -8,7 +6,11 @@ import { selectAll } from 'd3'
  * @param {number} height The height of the graph
  */
 export function positionLabels (g, width, height) {
-  // TODO : Position axis labels
+  d3.select('.x.axis-text')
+    .attr('transform', 'translate(' + (width / 2) + ',' + (height) + ')')
+
+  d3.select('.y.axis-text')
+    .attr('transform', 'translate(0,' + (height / 2) + ') rotate(-90)')
 }
 
 /**
@@ -58,13 +60,12 @@ export function setCircleHoverHandler (tip) {
 export function moveCircles (xScale, yScale, transitionDuration) {
   // TODO : Set up the transition and place the circle centers
   // in x and y according to their GDP and CO2 respectively
-  /*
-  selectAll('circle')
+
+  d3.selectAll('circle')
     .transition()
     .attr('cx', d => xScale(d.GDP))
     .attr('cy', d => yScale(d.CO2))
     .duration(transitionDuration)
-  */
 }
 
 /**
