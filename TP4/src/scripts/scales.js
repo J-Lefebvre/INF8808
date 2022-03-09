@@ -42,7 +42,7 @@ export function setColorScale (data) {
     }
   }
   return d3.scaleOrdinal()
-    .domain([0, continents.length])
+    .domain([...continents].sort())
     .range(d3.schemeCategory10)
 }
 
@@ -54,16 +54,12 @@ export function setColorScale (data) {
  * @returns {*} The log scale in X
  */
 export function setXScale (width, data) {
-  let maxGDP = 0
-  for (const year in data) {
-    for (const country of data[year]) {
-      if (country.GDP > maxGDP) {
-        maxGDP = country.GDP
-      }
-    }
-  }
+  const allCountry = [...data['2000'], ...data['2015']]
+  const minDomain = d3.min(allCountry, country => country.GDP);
+  const maxDomain = d3.max(allCountry, country => country.GDP);
+
   return d3.scaleLog()
-    .domain([0, maxGDP])
+    .domain([minDomain, maxDomain])
     .range([0, width])
 }
 
@@ -75,15 +71,11 @@ export function setXScale (width, data) {
  * @returns {*} The log scale in Y
  */
 export function setYScale (height, data) {
-  let maxCO2 = 0
-  for (const year in data) {
-    for (const country of data[year]) {
-      if (country.CO2 > maxCO2) {
-        maxCO2 = country.CO2
-      }
-    }
-  }
+  const allCountry = [...data['2000'], ...data['2015']]
+  const minDomain = d3.min(allCountry, country => country.CO2);
+  const maxDomain = d3.max(allCountry, country => country.CO2);
+
   return d3.scaleLog()
-    .domain([maxCO2, 0])
+    .domain([minDomain, maxDomain])
     .range([height, 0])
 }
