@@ -30,6 +30,12 @@ export function convertCoordinates (data, projection) {
       y:...
     }
   */
+
+  for (const element of data.features) {
+    var xy = projection(element.geometry.coordinates)
+    element.x = xy[0]
+    element.y = xy[1]
+  }
 }
 
 /**
