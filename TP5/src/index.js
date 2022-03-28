@@ -43,7 +43,7 @@ import * as panel from './scripts/panel.js'
     d3.json('./projetpietonnisation2017.geojson').then(function (data) {
       preprocess.convertCoordinates(data, projection)
       preprocess.simplifyDisplayTitles(data)
-
+      
       viz.colorDomain(color, data)
       viz.mapMarkers(data, color, panel)
 

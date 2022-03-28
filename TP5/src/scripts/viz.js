@@ -6,7 +6,7 @@
 // Adam Prévost - 1947205
 // Jules Lefebvre - 1847158
 //
-
+import * as helper from './helper.js'
 /**
  * Sets the domain of the color scale. Each type of site should have its own corresponding color.
  *
@@ -21,7 +21,7 @@ export function colorDomain (color, data) {
       Domain.push(element.properties.TYPE_SITE_INTERVENTION)
     }
   }
-  color.domain(Domain)
+  color.domain(Domain.sort())
 }
 
 /**
@@ -86,11 +86,13 @@ export function mapMarkers (data, color, panel) {
   // When clicked, the panel is displayed.
 
   let map = d3.select('#marker-g')
-  console.log(color("Noyau villageois"))
+  let simulation = helper.getSimulation(data.features);
+  helper.simulate(simulation);
   map.selectAll('circle')
     .data(data.features)
     .enter()
     .append('circle')
+    .attr("class","marker")
     .attr('cx',(properties)=>properties.x)
     .attr('cy',(properties)=>properties.y)
     .attr('r',5)
