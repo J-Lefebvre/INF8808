@@ -18,4 +18,16 @@ import d3Legend from 'd3-svg-legend'
 export function drawLegend (colorScale, g) {
   // TODO : Generate the legend
   // For help, see : https://d3-legend.susielu.com/
+  g.append('g')
+  .attr('class', 'legend')
+  .attr('transform', 'translate(50, 130)')
+  .style('font-size', '15')
+
+  const legend = d3Legend.legendColor()
+  .shape('path', d3.symbol().type(d3.symbolCircle).size(300)())
+  .title('Légende')
+  .scale(colorScale)
+
+  g.select('.legend')
+    .call(legend)
 }
