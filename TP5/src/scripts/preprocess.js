@@ -1,3 +1,12 @@
+// INF8808 - TP5
+// Groupe 4
+//
+// Clara Serruau - 2164678
+// Julien Dupuis - 1960997
+// Adam Prévost - 1947205
+// Jules Lefebvre - 1847158
+//
+
 const TITLES = {
   '1. Noyau villageois': 'Noyau villageois',
   '2. Rue commerciale de quartier, d’ambiance ou de destination': 'Rue commerciale de quartier, d’ambiance ou de destination',
