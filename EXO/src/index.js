@@ -1,15 +1,13 @@
 'use strict'
 
 import * as helper from './scripts/helper.js'
-import * as viz from './scripts/viz.js'
+import * as heatmap from './scripts/heatmap.js'
 import * as preprocess from './scripts/preprocess.js'
-import * as legend from './scripts/legend.js'
-import * as panel from './scripts/panel.js'
 
 /**
- * @file This file is the entry-point for the the code for TP5 for the course INF8808.
- * @author Olivia Gélinas
- * @version v1.0.0
+ * @file
+ * @author
+ * @version
  */
 
 (function (d3) {
@@ -30,27 +28,8 @@ import * as panel from './scripts/panel.js'
    *   This function builds the graph.
    */
   function build () {
-    var color = d3.scaleOrdinal(d3.schemeCategory10)
-
-    var projection = helper.getProjection()
-
-    var path = helper.getPath(projection)
-
-    d3.json('./montreal.json').then(function (data) {
-      viz.mapBackground(data, path, viz.showMapLabel)
-    })
-
-    d3.json('./projetpietonnisation2017.geojson').then(function (data) {
-      preprocess.convertCoordinates(data, projection)
-      preprocess.simplifyDisplayTitles(data)
+    d3.csv('./donnees_L9_L22.csv').then(function (data) {
       
-      viz.colorDomain(color, data)
-      viz.mapMarkers(data, color, panel)
-
-      legend.drawLegend(color, d3.select('.main-svg'))
-
-      const simulation = helper.getSimulation(data)
-      helper.simulate(simulation)
-    })
+    }
   }
 })(d3)
