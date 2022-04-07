@@ -1,35 +1,42 @@
 // INF8808 - Exo
 //
-// Clara Serruau - 2164678
-// Julien Dupuis - 1960997
 // Adam Prévost - 1947205
+// Armelle Jézéquel - 2098157
+// Clara Serruau - 2164678
 // Jules Lefebvre - 1847158
+// Julien Dupuis - 1960997
 //
 
 /**
- *  Uses the projection to convert longitude and latitude to xy coordinates.
- *
- * The keys for the coordinate are written to each feature object in the data.
+ * Ajout de champs à l'objet
+ * jour_semaine {0, 1, 2, 3, 4, 5, 6} où 0 = dimanche
+ * type_jour {semaine, fin de semaine}
+ * ferie {true, false}
  *
  * @param {object[]} data The data to be displayed
- * @param {*} projection The projection to use to convert the longitude and latitude
  */
-export function convertCoordinates (data, projection) {
-  for (const element of data.features) {
-    var xy = projection(element.geometry.coordinates)
-    element.x = xy[0]
-    element.y = xy[1]
-  }
-}
+export function addDayType(data) {
+  for (var row in data) {
+    // jour_semaine
+    var d = new Date(row.date)
+    row.jour_semaine = d.getDay()
 
-/**
- * Simplifies the titles for the property 'TYPE_SITE_INTERVENTION'. The names
- * to use are contained in the constant 'TITLES' above.
- *
- * @param {*} data The data to be displayed
- */
-export function simplifyDisplayTitles (data) {
-  for (const element of data.features) {
-    element.properties.TYPE_SITE_INTERVENTION = TITLES[element.properties.TYPE_SITE_INTERVENTION]
+    // type_jour
+    if(row.jour_semaine === (0 || 6)){
+      row.type_jour = "fin de semaine"
+    }
+    else{
+      row.type_jour = "semaine"
+    }
+    
+    // ferie
+    if(row.voyage.includes('F')){
+      row.ferie = "true"
+    }
+    else{
+      row.ferie = "false"
+    }
+
+    console.log(row)
   }
 }

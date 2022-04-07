@@ -50,7 +50,7 @@ export function setCanvasSize (width, height) {
  */
 export function appendGraphLabels (g) {
   g.append('text')
-    .text('Explorez les rues pietonnes de Montréal')
+    .text('Achalandage et ponctualité des lignes de bus 9 et 22 de la couronne Nord de Montréal')
     .attr('class', 'title')
     .attr('fill', '#000000')
     .attr('font-family', 'Oswald')
@@ -58,7 +58,7 @@ export function appendGraphLabels (g) {
     .attr('transform', 'translate(50, 50)')
 
   g.append('text')
-    .text('Cliquez sur un marqueur pour plus d\'information.')
+    .text('Sous-titre')
     .attr('class', 'title')
     .attr('fill', '#000000')
     .attr('font-family', 'Open Sans Condensed')
