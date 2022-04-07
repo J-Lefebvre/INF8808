@@ -40,7 +40,7 @@ export function display (d, color) {
 
   setMode(mode, d)
 
-  if (d.properties.OBJECTIF_THEMATIQUE) {
+  if (d.OBJECTIF_THEMATIQUE) {
     const theme = panel
       .append('div')
       .attr('class', 'theme')
@@ -49,7 +49,7 @@ export function display (d, color) {
       .text('Thématique : ')
 
     const list = theme.append('ul')
-    d.properties.OBJECTIF_THEMATIQUE.split('\n').forEach(element => {
+    d.OBJECTIF_THEMATIQUE.split('\n').forEach(element => {
       setTheme(list, element)
     })
   }
@@ -64,7 +64,8 @@ export function display (d, color) {
  * @param {*} color The color scale to select the title's color
  */
 function setTitle (g, d, color) {
-  // TODO : Set the title
+  g.text(d.NOM_PROJET)
+    .style('color', color(d.TYPE_SITE_INTERVENTION))
 }
 
 /**
@@ -74,7 +75,7 @@ function setTitle (g, d, color) {
  * @param {object} d The data to display
  */
 function setMode (g, d) {
-  // TODO : Set the mode
+  g.text(d.MODE_IMPLANTATION)
 }
 
 /**
@@ -85,5 +86,6 @@ function setMode (g, d) {
  * @param {object} d The data to display
  */
 function setTheme (g, d) {
-  // TODO : Append a list element representing the given theme
+  g.append('li')
+    .text(d)
 }
