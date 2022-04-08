@@ -9,34 +9,34 @@
 
 /**
  * Ajout de champs à l'objet
- * jour_semaine {0, 1, 2, 3, 4, 5, 6} où 0 = dimanche
+ * jour_semaine {0, 1, 2, 3, 4, 5, 6} où 0 = Lundi
  * type_jour {semaine, fin de semaine}
  * ferie {true, false}
  *
  * @param {object[]} data The data to be displayed
  */
 export function addDayType(data) {
-  for (var row in data) {
+  for (var i = 0; i < data.length; i++) {
     // jour_semaine
-    var d = new Date(row.date)
-    row.jour_semaine = d.getDay()
+    var d = new Date(data[i].date)
+    data[i].jour_semaine = d.getDay()
 
     // type_jour
-    if(row.jour_semaine === (0 || 6)){
-      row.type_jour = "fin de semaine"
+    if(data[i].jour_semaine === (5 || 6)){
+      data[i].type_jour = "fin de semaine"
     }
     else{
-      row.type_jour = "semaine"
+      data[i].type_jour = "semaine"
     }
     
     // ferie
-    if(row.voyage.includes('F')){
-      row.ferie = "true"
+    if(data[i].voyage.includes('F')){
+      data[i].ferie = "true"
     }
     else{
-      row.ferie = "false"
+      data[i].ferie = "false"
     }
 
-    console.log(row)
+    console.log(data[i])
   }
 }
