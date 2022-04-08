@@ -1,3 +1,4 @@
+import * as helper from './helper.js'
 
 /**
  *
@@ -175,7 +176,7 @@ export function generateGroupedQuantileGraph (container, data) {
     ]))
     .attr('stroke', 'black')
   // Generate steps
-  var steps = getSteps(10, dataScale.domain)
+  var steps = helper.getSteps(NUMBER_OF_TICKS, dataScale.domain())
   for (const step of steps) {
     const y = dataScale(step)
     // Draw data values
@@ -237,54 +238,32 @@ export function generateGroupedQuantileGraph (container, data) {
   // ===================== OTHER =====================
 
   // Draw Title
-  svg.append('text')
+  var title = svg.append('text')
     .attr('x', (WIDTH - MARGIN.right - MARGIN.left) / 2 + MARGIN.left)
     .attr('y', MARGIN.top - FONT_SIZE * 2)
     .attr('text-anchor', 'middle')
     .text(data.title)
     .style('font-size', FONT_SIZE)
 
+  // ===================== HOVER =====================
+
+  // test
+  title.on('mouseover', function (d) {
+    d3.select(this).style('font-size', 24)
+  }).on('mouseout', function (d) {
+    d3.select(this).style('font-size', FONT_SIZE)
+  })
+
+  // more tests
+  var items = bars.node().childNodes
+  for (const item of items) {
+    d3.select(item).on('mouseover', function (d) {
+      d3.select(this).style('font-size', 24)
+        .attr('stroke-width', 5)
+    }).on('mouseout', function (d) {
+      d3.select(this).style('font-size', FONT_SIZE)
+    })
+  }
+
   return svg
-}
-
-/**
- * @param {number} nSteps The ideal number of ticks
- * @param {object} domain Domain of d3 scale
- * @returns {number} The best step to use
- */
-export function getClosestStep (nSteps, domain) {
-  const STEPS = [1, 2, 5, 10, 20, 25, 50, 100, 200, 250, 500, 1000, 2000, 5000, 10000]
-  var step = (domain[1] - domain[0]) / nSteps
-  var stepDiff = []
-  var bestStep = STEPS[STEPS.length - 1]
-  for (let i = 0; i < STEPS.length; i++) {
-    stepDiff.push(Math.abs(STEPS[i] - step))
-    if (i > 0 && stepDiff[i] > stepDiff[i - 1]) {
-      bestStep = STEPS[i - 1]
-      break
-    }
-  }
-  return bestStep
-}
-
-/**
- * @param {number} nSteps The ideal number of steps
- * @param {object} domain Domain of d3 scale
- * @returns {Array<number>} The best steps
- */
-export function getSteps (nSteps, domain) {
-  var step = getClosestStep(nSteps, domain)
-  var steps = []
-  if (domain[0] <= 0 && domain[1] >= 0) {
-    steps.push(0)
-  } else {
-    steps.push(domain[0])
-  }
-  while (steps[steps.length - 1] < domain[1] - step) {
-    steps.push(steps[steps.length - 1] + step)
-  }
-  while (steps[0] > domain[0] + step) {
-    steps.unshift(steps[0] - step)
-  }
-  return steps
 }
