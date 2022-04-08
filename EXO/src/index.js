@@ -24,14 +24,35 @@ import * as preprocess from './scripts/preprocess.js'
   helper.appendGraphLabels(d3.select('.main-svg'))
   helper.initPanelDiv()
 
+  // Solution temporaire, éventuellement l'utilisateur peut choisir la période qui l'intéresse, s'il veut inclure les week-end et les fériés.
+  const startDate = new Date('2021-09-01')
+  const endDate = new Date('2021-12-01')
+  const typeJour = 'semaine'
+  const ferie = false
+
   build()
 
   /**
    *   Cette fonction construit la page web
    */
   function build () {
-    d3.csv('./donnees_L9_L22.csv').then(function(data) {
+    d3.csv('./donnees_L9_L22.csv').then(function (data) {
+      // Change les string pour les types appropriés
+      data.forEach(function (d) {
+        d.date = new Date(d.date + ' 00:00:00')
+        d.ligne = +d.ligne
+        d.voyage = +d.voyage
+        d.arret_code = +d.arret_code
+        d.montants = +d.montants
+        d.Minutes_ecart_planifie = +d.Minutes_ecart_planifie
+        d.sequence_arret = +d.sequence_arret
+        d.arret_Latitude = +d.arret_Latitude
+        d.arret_Longitude = +d.arret_Longitude
+      })
+
       preprocess.addDayType(data)
+      console.log(data)
+      preprocess.aggregateData(data, startDate, endDate, typeJour, ferie)
     })
   }
 })(d3)
