@@ -1,10 +1,19 @@
-/* Idée générale pour l'algorithme qui parcours l'objet heatmapData pour recueillir les valeurs pour chaque carré de la heatmap.
+// Idée générale pour l'algorithme qui parcours l'objet vizData pour recueillir les valeurs pour chaque carré de la heatmap.
 
-export function drawHeatmap (heatmapData, ligne, girouette, indicateur) {
-    for (v = 0; v < heatmapData[ligne][girouette].voyage.length; v++) {
-        for (a = 0; a < heatmapData[ligne][girouette].[v].length; a++) {
-            var valueSquare = heatmapData[ligne][girouette].[v].[a].[indicateur]
-        }
-    }
-}
+/**
+ * @param vizData
+ * @param ligne
+ * @param girouette
+ * @param indicateur
  */
+export function drawHeatmap (vizData, ligne, girouette, indicateur) {
+  var posLigne = vizData.findIndex(e => e.ligne === ligne)
+  var posGirouette = vizData[posLigne].girouettes.findIndex(e => e.girouette === girouette)
+
+  for (var v = 0; v < vizData[posLigne].girouettes[posGirouette].voyages.length; v++) {
+    for (var a = 0; a < vizData[posLigne].girouettes[posGirouette].voyages[v].arrets.length; a++) {
+      var valueSquare = vizData[posLigne].girouettes[posGirouette].voyages[v].arrets[a][indicateur]
+      console.log(valueSquare)
+    }
+  }
+}

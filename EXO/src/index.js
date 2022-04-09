@@ -30,15 +30,17 @@ import * as preprocess from './scripts/preprocess.js'
   const typeJour = 'semaine'
   const ferie = false
 
+  var vizData = []
+
   build()
 
   /**
    *   Cette fonction construit la page web
    */
   function build () {
-    d3.csv('./donnees_L9_L22.csv').then(function (data) {
+    d3.csv('./donnees_L9_L22.csv').then(function (csvData) {
       // Change les string pour les types appropriés
-      data.forEach(function (d) {
+      csvData.forEach(function (d) {
         d.date = new Date(d.date + ' 00:00:00')
         d.ligne = +d.ligne
         d.voyage = +d.voyage
@@ -50,8 +52,10 @@ import * as preprocess from './scripts/preprocess.js'
         d.arret_Longitude = +d.arret_Longitude
       })
 
-      preprocess.addDayType(data)
-      preprocess.aggregateData(data, startDate, endDate, typeJour, ferie)
+      preprocess.addDayType(csvData)
+      preprocess.aggregateData(csvData, vizData, startDate, endDate, typeJour, ferie)
+
+      heatmap.drawHeatmap(vizData, 9, 'Lafontaine Via Gare  Saint-Jérôme', 'moyMinutesEcart')
     })
   }
 })(d3)
