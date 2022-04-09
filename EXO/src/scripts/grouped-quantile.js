@@ -1,5 +1,14 @@
 import * as helper from './helper.js'
 
+const MARGIN = { top: 100, right: 80, bottom: 150, left: 150 }
+const FONT_SIZE = 16
+const DIRECTIONS_ANGLE = -45
+const QUANTILE_STROKE_COLOR = 'black'
+const QUANTILE_FILL_COLOR = 'lightgray'
+const QUANTILE_STROKE_WIDTH = 2
+const NUMBER_OF_TICKS = 10
+const GRADIENT_COLORS = ['red', 'green', 'yellow']
+
 /**
  *
  */
@@ -42,7 +51,65 @@ export function generateDelayGraph (container, data) {
 
   // Generate common graph
   data.title = 'Retard Moyen'
-  var svg = generateGroupedQuantileGraph(container, data)
+  var [svg, dataScale] = generateGroupedQuantileGraph(container, data)
+  var WIDTH = container.node().getBoundingClientRect().width
+  var HEIGHT = container.node().getBoundingClientRect().height
+
+  // Set gradients
+  svg.append('defs')
+    .append('linearGradient')
+    .attr('id', 'late-grad')
+    .attr('x1', '0%')
+    .attr('x2', '0%')
+    .attr('y1', '0%')
+    .attr('y2', '100%')
+    .selectAll('stop')
+    .data([GRADIENT_COLORS[0], GRADIENT_COLORS[1]])
+    .enter()
+    .append('stop')
+    .style('stop-color', function (d) { return d })
+    .attr('offset', function (d, i) { return 100 * i + '%' })
+  svg.append('defs')
+    .append('linearGradient')
+    .attr('id', 'early-grad')
+    .attr('x1', '0%')
+    .attr('x2', '0%')
+    .attr('y1', '0%')
+    .attr('y2', '100%')
+    .selectAll('stop')
+    .data([GRADIENT_COLORS[1], GRADIENT_COLORS[2]])
+    .enter()
+    .append('stop')
+    .style('stop-color', function (d) { return d })
+    .attr('offset', function (d, i) { return 100 * i + '%' })
+  // Draw gradients
+  svg.insert('rect', '#x-axis')
+    .attr('width', WIDTH - MARGIN.left - MARGIN.right)
+    .attr('x', MARGIN.left)
+    .attr('height', dataScale(15) - MARGIN.top)
+    .attr('y', MARGIN.top)
+    .attr('fill', GRADIENT_COLORS[0])
+  svg.insert('rect', '#x-axis')
+    .attr('width', WIDTH - MARGIN.left - MARGIN.right)
+    .attr('x', MARGIN.left)
+    .attr('height', dataScale(5) - dataScale(15))
+    .attr('y', dataScale(15))
+    .attr('fill', 'url(#late-grad)')
+  svg.insert('rect', '#x-axis')
+    .attr('width', WIDTH - MARGIN.left - MARGIN.right)
+    .attr('x', MARGIN.left)
+    .attr('height', dataScale(-5) - dataScale(5))
+    .attr('y', dataScale(5))
+    .attr('fill', 'url(#early-grad)')
+  svg.insert('rect', '#x-axis')
+    .attr('width', WIDTH - MARGIN.left - MARGIN.right)
+    .attr('x', MARGIN.left)
+    .attr('height', HEIGHT - MARGIN.bottom - dataScale(-5))
+    .attr('y', dataScale(-5))
+    .attr('fill', GRADIENT_COLORS[2])
+  // Set y axis label
+  svg.select('#y-axis > .label')
+    .text('Minute')
 }
 
 /**
@@ -60,7 +127,10 @@ export function generateTrafficGraph (container, data) {
 
   // Generate common graph
   data.title = 'Achalandage Moyen'
-  var svg = generateGroupedQuantileGraph(container, data)
+  var [svg] = generateGroupedQuantileGraph(container, data)
+  // Set y axis label
+  svg.select('#y-axis > .label')
+    .text('Nombre de personnes\npar jour')
 }
 
 /**
@@ -69,13 +139,6 @@ export function generateTrafficGraph (container, data) {
  * @returns {Selection} The generated graph as svg
  */
 export function generateGroupedQuantileGraph (container, data) {
-  const MARGIN = { top: 100, right: 80, bottom: 150, left: 150 }
-  const FONT_SIZE = 16
-  const DIRECTIONS_ANGLE = -45
-  const QUANTILE_STROKE_COLOR = 'gray'
-  const QUANTILE_STROKE_WIDTH = 2
-  const NUMBER_OF_TICKS = 10
-
   // ===================== SETUP =====================
 
   // Delete existing content
@@ -119,7 +182,7 @@ export function generateGroupedQuantileGraph (container, data) {
   }
   var dataScale = d3.scaleLinear()
     .domain([minValue, maxValue])
-    .range([HEIGHT - MARGIN.bottom - BAR_WIDTH / 2, MARGIN.top])
+    .range([HEIGHT - MARGIN.bottom - FONT_SIZE, MARGIN.top])
 
   // ===================== X AXIS =====================
 
@@ -144,13 +207,14 @@ export function generateGroupedQuantileGraph (container, data) {
   }
   // Draw direction values
   const directionValuesY = lineValuesY + FONT_SIZE
-  for (const direction of data.directions) {
-    const x = directionsScale(direction)
+  for (let i = 0; i < data.directions.length; i++) {
+    const x = directionsScale(data.directions[i])
     xAxis.append('text')
       .attr('text-anchor', 'end')
       .attr('transform', `translate(${x}, ${directionValuesY}) rotate(${DIRECTIONS_ANGLE})`)
-      .text(direction)
+      .text(data.directions[i])
       .style('font-size', FONT_SIZE)
+      .attr('class', `direction${i} label`)
   }
   // Draw labels
   xAxis.append('text')
@@ -197,8 +261,9 @@ export function generateGroupedQuantileGraph (container, data) {
   }
   // Draw labels
   yAxis.append('text')
-    .attr('x', MARGIN.left)
+    .attr('x', MARGIN.left - FONT_SIZE / 2)
     .attr('y', MARGIN.top - FONT_SIZE / 2)
+    .attr('class', 'label')
     .attr('text-anchor', 'end')
     .text('Unité de données')
     .style('font-size', FONT_SIZE)
@@ -219,51 +284,84 @@ export function generateGroupedQuantileGraph (container, data) {
       .attr('d', d3.line()([[x, top], [x, bottom]]))
       .attr('stroke', QUANTILE_STROKE_COLOR)
       .attr('stroke-width', QUANTILE_STROKE_WIDTH)
+      .attr('class', `direction${i}`)
     // Draw Q1 to Q3 bar
     bars.append('rect')
       .attr('width', BAR_WIDTH)
       .attr('x', x - BAR_WIDTH / 2)
       .attr('height', q1 - q3)
       .attr('y', q3)
-      .attr('fill', 'white')
+      .attr('fill', QUANTILE_FILL_COLOR)
       .attr('stroke', QUANTILE_STROKE_COLOR)
-      .attr('stroke-width', QUANTILE_STROKE_WIDTH * 2)
+      .attr('stroke-width', QUANTILE_STROKE_WIDTH)
+      .attr('class', `direction${i}`)
     // Draw Q2 line
     bars.append('path')
       .attr('d', d3.line()([[x - BAR_WIDTH / 2, q2], [x + BAR_WIDTH / 2, q2]]))
       .attr('stroke', QUANTILE_STROKE_COLOR)
       .attr('stroke-width', QUANTILE_STROKE_WIDTH)
+      .attr('class', `direction${i}`)
+    // Draw quantile values
+    for (let j = 0; j < data.quantileSets[i].length; j++) {
+      const quantile = bars.append('g')
+        .attr('class', `direction${i} quantile`)
+        .style('visibility', 'hidden')
+      quantile.append('text')
+        .attr('x', directionsScale(data.directions[i]) + (i % 2 === 0 ? -1 : 1) * (BAR_WIDTH / 2 + FONT_SIZE / 2))
+        .attr('y', dataScale(data.quantileSets[i][j]))
+        .attr('text-anchor', (i % 2 === 0 ? 'end' : 'start'))
+        .text(data.quantileSets[i][j])
+        .style('font-size', FONT_SIZE)
+        .attr('id', `quantile-text-${i}-${j}`)
+      // Text background
+      const textBoundingClientRect = quantile.node().getBoundingClientRect()
+      quantile.insert('rect', `#quantile-text-${i}-${j}`)
+        .attr('width', textBoundingClientRect.width)
+        .attr('x', textBoundingClientRect.x)
+        .attr('height', textBoundingClientRect.height)
+        .attr('y', textBoundingClientRect.y)
+        .attr('fill', 'white')
+    }
+  }
+
+  // ===================== HOVER =====================
+
+  // Create triggers
+  for (let i = 0; i < data.directions.length; i++) {
+    bars.append('rect')
+      .attr('width', BAR_WIDTH)
+      .attr('x', directionsScale(data.directions[i]) - BAR_WIDTH / 2)
+      .attr('height', dataScale.range()[0] - dataScale.range()[1] + FONT_SIZE)
+      .attr('y', MARGIN.top)
+      .attr('fill', 'transparent')
+      // Highlight direction
+      .on('mouseover', () => {
+        d3.selectAll(`.direction${i}`)
+          .attr('stroke-width', QUANTILE_STROKE_WIDTH * 2)
+        d3.selectAll(`.direction${i}.label`)
+          .style('font-size', FONT_SIZE * 1.5)
+        d3.selectAll(`.direction${i}.quantile`)
+          .style('visibility', 'visible')
+      // Unhighlight direction
+      }).on('mouseout', () => {
+        d3.selectAll(`.direction${i}`)
+          .attr('stroke-width', QUANTILE_STROKE_WIDTH)
+        d3.selectAll(`.direction${i}.label`)
+          .style('font-size', FONT_SIZE)
+        d3.selectAll(`.direction${i}.quantile`)
+          .style('visibility', 'hidden')
+      })
   }
 
   // ===================== OTHER =====================
 
   // Draw Title
-  var title = svg.append('text')
+  svg.append('text')
     .attr('x', (WIDTH - MARGIN.right - MARGIN.left) / 2 + MARGIN.left)
     .attr('y', MARGIN.top - FONT_SIZE * 2)
     .attr('text-anchor', 'middle')
     .text(data.title)
     .style('font-size', FONT_SIZE)
 
-  // ===================== HOVER =====================
-
-  // test
-  title.on('mouseover', function (d) {
-    d3.select(this).style('font-size', 24)
-  }).on('mouseout', function (d) {
-    d3.select(this).style('font-size', FONT_SIZE)
-  })
-
-  // more tests
-  var items = bars.node().childNodes
-  for (const item of items) {
-    d3.select(item).on('mouseover', function (d) {
-      d3.select(this).style('font-size', 24)
-        .attr('stroke-width', 5)
-    }).on('mouseout', function (d) {
-      d3.select(this).style('font-size', FONT_SIZE)
-    })
-  }
-
-  return svg
+  return [svg, dataScale]
 }
