@@ -28,7 +28,46 @@ export function addDayType (data) {
   }
 }
 /**
- * TODO : Définition
+ * aggregateData() remplit l'objet heatmapData à partir des données du csv (data)
+ *
+ * heatmapData a la forme suivante :
+ *
+ * [
+    {
+        "ligne": 9,
+        "girouettes": [
+            {
+                "girouette": "Lafontaine Via Gare  Saint-Jérôme",
+                "voyages": [
+                    {
+                        "voyage": 1,
+                        "arrets": [
+                            {
+                                "codeArret": 82127,
+                                "nomArret": "Station Montmorency",
+                                "minutesEcart": [
+                                    1,
+                                    ...
+                                ],
+                                "moyMinutesEcart": null,
+                                "nClients": [
+                                    3,
+                                    ...
+                                ],
+                                "moyNClients": null,
+                                "ponctualite": [
+                                    "Ponctuel",
+                                    ...
+                                ],
+                                "tauxPonctualite": null,
+                                "minutesEcartClient": [
+                                    3,
+                                    ...
+                                ],
+                                "moyMinutesEcartClient": null
+                            },
+                            ...
+ *
  *
  * @param {*} data L'array d'objets qui contient les lignes du csv, modifié par preprocess.addDayType()
  * @param {*} startDate Date de début
@@ -38,33 +77,58 @@ export function addDayType (data) {
  * @returns heatmapData
  */
 export function aggregateData (data, startDate, endDate, typeJour, ferie) {
-  var heatmapData = {
-    ligne: {
-      girouette: {
-        noVoyage: {
-          arret: {
-            minutesEcart: [],
-            nClients: [],
-            ponctualite: [],
-            minutesEcartClient: []
-          }
-        }
-      }
-    }
-  }
+  var heatmapData = []
 
   for (var i = 0; i < data.length; i++) {
-    console.log(data[i])
     if (data[i].date >= startDate && data[i].date <= endDate && data[i].type_jour === typeJour && data[i].ferie === ferie) {
-      var ligne = data[i].ligne
-      var girouette = data[i].Girouette
-      var noVoyage = data[i].noVoyage
-      var arret = data[i].arret
+      if (heatmapData.length === 0) {
+        heatmapData.push({ ligne: data[i].ligne, girouettes: [] })
+      }
 
-      heatmapData[ligne][girouette][noVoyage][arret].minutesEcart.push(data[i].Minutes_ecart_planifie)
-      heatmapData[ligne][girouette][noVoyage][arret].nClients.push(data[i].montants)
-      heatmapData[ligne][girouette][noVoyage][arret].ponctualite.push(data[i].Etat_Ponctualite)
-      heatmapData[ligne][girouette][noVoyage][arret].minutesEcartClient.push(data[i].Minutes_ecart_planifie * data[i].montants)
+      // On ajoute la ligne si elle n'existe pas déjà dans heatmapData
+      var posLigne = heatmapData.findIndex(e => e.ligne === data[i].ligne)
+      if (posLigne === -1) {
+        heatmapData.push({ ligne: data[i].ligne, girouettes: [] })
+        posLigne = heatmapData.length - 1
+      }
+
+      // On ajoute la direction si elle n'existe pas déjà dans heatmapData
+      var posGirouette = heatmapData[posLigne].girouettes.findIndex(e => e.girouette === data[i].Girouette)
+      if (posGirouette === -1) {
+        heatmapData[posLigne].girouettes.push({ girouette: data[i].Girouette, voyages: [] })
+        posGirouette = heatmapData[posLigne].girouettes.length - 1
+      }
+
+      // On ajoute le voyage s'il n'existe pas déjà dans heatmapData
+      var posVoyage = heatmapData[posLigne].girouettes[posGirouette].voyages.findIndex(e => e.voyage === data[i].voyage)
+      if (posVoyage === -1) {
+        heatmapData[posLigne].girouettes[posGirouette].voyages.push({ voyage: data[i].voyage, arrets: [] })
+        posVoyage = heatmapData[posLigne].girouettes[posGirouette].voyages.length - 1
+      }
+
+      // On ajoute l'arrêt s'il n'existe pas déjà dans heatmapData
+      var posArret = heatmapData[posLigne].girouettes[posGirouette].voyages[posVoyage].arrets.findIndex(e => e.codeArret === data[i].arret_code)
+      if (posArret === -1) {
+        heatmapData[posLigne].girouettes[posGirouette].voyages[posVoyage].arrets.push(
+          {
+            codeArret: data[i].arret_code,
+            nomArret: data[i].arret_nom,
+            minutesEcart: [],
+            moyMinutesEcart: null,
+            nClients: [],
+            moyNClients: null,
+            ponctualite: [],
+            tauxPonctualite: null,
+            minutesEcartClient: [],
+            moyMinutesEcartClient: null
+          })
+        posArret = heatmapData[posLigne].girouettes[posGirouette].voyages[posVoyage].arrets.length - 1
+      }
+
+      heatmapData[posLigne].girouettes[posGirouette].voyages[posVoyage].arrets[posArret].minutesEcart.push(data[i].Minutes_ecart_planifie)
+      heatmapData[posLigne].girouettes[posGirouette].voyages[posVoyage].arrets[posArret].nClients.push(data[i].montants)
+      heatmapData[posLigne].girouettes[posGirouette].voyages[posVoyage].arrets[posArret].ponctualite.push(data[i].Etat_Ponctualite)
+      heatmapData[posLigne].girouettes[posGirouette].voyages[posVoyage].arrets[posArret].minutesEcartClient.push(data[i].Minutes_ecart_planifie * data[i].montants)
     }
   }
 

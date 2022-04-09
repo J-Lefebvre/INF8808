@@ -51,7 +51,6 @@ import * as preprocess from './scripts/preprocess.js'
       })
 
       preprocess.addDayType(data)
-      console.log(data)
       preprocess.aggregateData(data, startDate, endDate, typeJour, ferie)
     })
   }
