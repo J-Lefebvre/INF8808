@@ -28,7 +28,7 @@ export function addDayType (data) {
   }
 }
 /**
- * aggregateData() remplit l'objet heatmapData à partir des données du csv (data)
+ * aggregateData() remplit l'objet vizData à partir des données du csv (data)
  *
  * @param {*} csvData L'array d'objets qui contient les lignes du csv, modifié par preprocess.addDayType()
  * @param {*} vizData L'array d'objets qui contient les données consolidées requises pour générer les viz
@@ -45,28 +45,28 @@ export function aggregateData (csvData, vizData, startDate, endDate, typeJour, f
         vizData.push({ ligne: csvData[i].ligne, girouettes: [] })
       }
 
-      // On ajoute la ligne si elle n'existe pas déjà dans heatmapData
+      // On ajoute la ligne si elle n'existe pas déjà dans vizData
       var posLigne = vizData.findIndex(e => e.ligne === csvData[i].ligne)
       if (posLigne === -1) {
         vizData.push({ ligne: csvData[i].ligne, girouettes: [] })
         posLigne = vizData.length - 1
       }
 
-      // On ajoute la direction si elle n'existe pas déjà dans heatmapData
+      // On ajoute la girouette si elle n'existe pas déjà dans vizData
       var posGirouette = vizData[posLigne].girouettes.findIndex(e => e.girouette === csvData[i].Girouette)
       if (posGirouette === -1) {
         vizData[posLigne].girouettes.push({ girouette: csvData[i].Girouette, voyages: [] })
         posGirouette = vizData[posLigne].girouettes.length - 1
       }
 
-      // On ajoute le voyage s'il n'existe pas déjà dans heatmapData
+      // On ajoute le voyage s'il n'existe pas déjà dans vizData
       var posVoyage = vizData[posLigne].girouettes[posGirouette].voyages.findIndex(e => e.voyage === csvData[i].voyage)
       if (posVoyage === -1) {
         vizData[posLigne].girouettes[posGirouette].voyages.push({ voyage: csvData[i].voyage, arrets: [] })
         posVoyage = vizData[posLigne].girouettes[posGirouette].voyages.length - 1
       }
 
-      // On ajoute l'arrêt s'il n'existe pas déjà dans heatmapData
+      // On ajoute l'arrêt s'il n'existe pas déjà dans vizData
       var posArret = vizData[posLigne].girouettes[posGirouette].voyages[posVoyage].arrets.findIndex(e => e.codeArret === csvData[i].arret_code)
       if (posArret === -1) {
         vizData[posLigne].girouettes[posGirouette].voyages[posVoyage].arrets.push(
