@@ -3,6 +3,7 @@
 import * as helper from './scripts/helper.js'
 import * as heatmap from './scripts/heatmap.js'
 import * as preprocess from './scripts/preprocess.js'
+import * as groupedQuantile from './scripts/grouped-quantile.js'
 
 /**
  * @file 
@@ -33,6 +34,7 @@ import * as preprocess from './scripts/preprocess.js'
   var vizData = []
 
   build()
+  groupedQuantile.generateViz3();
 
   /**
    *   Cette fonction construit la page web
@@ -51,10 +53,10 @@ import * as preprocess from './scripts/preprocess.js'
         d.arret_Latitude = +d.arret_Latitude
         d.arret_Longitude = +d.arret_Longitude
       })
-
+      //console.log(csvData)
       preprocess.addDayType(csvData)
       preprocess.aggregateData(csvData, vizData, startDate, endDate, typeJour, ferie)
-
+      console.log(vizData)
       heatmap.drawHeatmap(vizData, 9, 'Lafontaine Via Gare  Saint-Jérôme', 'moyMinutesEcart')
     })
   }

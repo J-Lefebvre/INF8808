@@ -13,7 +13,7 @@ export function drawHeatmap (vizData, ligne, girouette, indicateur) {
   for (var v = 0; v < vizData[posLigne].girouettes[posGirouette].voyages.length; v++) {
     for (var a = 0; a < vizData[posLigne].girouettes[posGirouette].voyages[v].arrets.length; a++) {
       var valueSquare = vizData[posLigne].girouettes[posGirouette].voyages[v].arrets[a][indicateur]
-      console.log(valueSquare)
+      //console.log(valueSquare)
     }
   }
 }
