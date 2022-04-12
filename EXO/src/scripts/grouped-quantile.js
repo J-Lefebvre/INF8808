@@ -7,7 +7,7 @@ const QUANTILE_STROKE_COLOR = 'black'
 const QUANTILE_FILL_COLOR = 'lightgray'
 const QUANTILE_STROKE_WIDTH = 2
 const NUMBER_OF_TICKS = 10
-const GRADIENT_COLORS = ['red', 'green', 'yellow']
+const GRADIENT_COLORS = ['#ffe4e4', '#e4ffe4', '#ffffe4']
 
 /**
  *
