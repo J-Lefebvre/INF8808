@@ -70,6 +70,21 @@ button:hover, button:active {
     width: 100%;
 }
 
+.legend-title {
+    font-weight: bold;
+}
+
+.legend {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+
+.legend-element {
+    display: flex;
+    padding: 10px;
+}
+
 a {
     display: flex;
     flex-grow: 0;

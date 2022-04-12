@@ -12,11 +12,19 @@ const BAR_STROKE_WIDTH = 2
  */
 export function generateViz2 (data) {
     var container = d3.select('#candlestick-graph-container')
-    var candlestickContainer = container.append('div')
-        .style('width', '100%')
-        .style('height', '55%')
+		var topDiv = container.append('div')
+			.style('width', '100%')
+      .style('height', '55%')
+    var candlestickContainer = topDiv.append('div')
+        .style('width', '90%')
+        .style('height', '100%')
+				.style('float', 'left')
+		var legendContainer = topDiv.append('div')
+        .style('width', '10%')
+        .style('height', '100%')
+				.style('float', 'right')
     var barGraphContainer = container.append('div')
-        .style('width', '100%')
+        .style('width', '90%')
         .style('height', '45%')
 
     // TODO: Fetch data
@@ -29,19 +37,67 @@ export function generateViz2 (data) {
         amounts.push(Math.floor(Math.random() * 70))
 				delay.push(Math.random() * (50 - (-10)) -10)
     }
-		data = {}
-		data.stops = stops
-		data.amounts = amounts
-		data.delay = delay
+	data = {}
+	data.stops = stops
+	data.amounts = amounts
+	data.delay = delay
 
-    // Regenerate graphs on resize
-
-	new ResizeObserver(() => { generateTopGraph(candlestickContainer, data) })
+  // Regenerate graphs on resize
+	new ResizeObserver(() => { generateTopGraph(candlestickContainer, data); setLegend(legendContainer); })
 		.observe(candlestickContainer.node())
 	new ResizeObserver(() => { generateBottomGraph(barGraphContainer, data) })
 		.observe(barGraphContainer.node())
 
-		//setLegend(candlestickContainer);
+}
+
+/**
+ * @param {Selection} container The div to generate the graph in
+ */
+ export function setLegend (container) {
+	container.html('')
+	var legendWidth = container.node().getBoundingClientRect().width
+  var legendHeight = container.node().getBoundingClientRect().height * 0.35
+	var svgLegend = container.append('svg')
+		.attr('width', legendWidth)
+		.attr('height', legendHeight)
+		.attr("style", "outline: thin solid black;")
+
+	svgLegend.append("text")
+		.attr('x', legendWidth/2)
+		.attr('y', 25)
+		.attr('dominant-baselin', 'middle')
+		.attr('text-anchor', 'middle')
+		.text("Légende")
+		.attr('fill', '#black')
+		.attr('font-size', "1em")
+
+	svgLegend.append('svg')
+		.append('rect')
+		.attr('transform', 'translate(' + 10 + ', 50)')
+		.attr('fill', BAR_FILL_COLOR_NEGATIVE)
+		.attr('stroke', BAR_STROKE_COLOR_NEGATIVE)
+		.attr('width', 25)
+		.attr('height', 25)
+
+	svgLegend.append("text")
+		.attr('transform', 'translate(' + 40 + ', 65)')
+		.text("Gain du retard")
+		.attr('fill', '#black')
+		.attr('font-size', "1em")
+
+	svgLegend.append('svg')
+		.append('rect')
+		.attr('transform', 'translate(' + 10 + ', 85)')
+		.attr('fill', BAR_FILL_COLOR_POSITIVE)
+		.attr('stroke', BAR_STROKE_COLOR_POSITIVE)
+		.attr('width', 25)
+		.attr('height', 25)
+
+	svgLegend.append("text")
+		.attr('transform', 'translate(' + 40 + ', 100)')
+		.text("Perte du retard")
+		.attr('fill', '#black')
+		.attr('font-size', "1em")
 }
 
 /**
@@ -75,7 +131,7 @@ export function generateBottomGraph (container, data) {
   // Delete existing content
   container.html('')
   // Set size
-  var width = container.node().getBoundingClientRect().width - 300
+  var width = container.node().getBoundingClientRect().width
   var height = container.node().getBoundingClientRect().height
   // Create svg
 	var margin = {top: 50, right: 100, bottom: 25, left: 100}
@@ -138,20 +194,20 @@ export function generateBottomGraph (container, data) {
 		.attr("transform", "translate(" + (width - margin.left + 10) + "," + (yScale(25)) + ")")
 		.text('Retard')
 		.attr('fill', '#D7625D')
-		.attr('font-size', 12)
+		.attr('font-size', 16)
 
 	svg.append("text")
 			.text('Ponctuel')
 			.attr('x', width - margin.left + 10)
       .attr('y', (yScale(2.5)))
       .attr('fill', '#577845')
-			.attr('font-size', 12)
+			.attr('font-size', 16)
 
 	svg.append("text")
 		.attr("transform", "translate(" + (width - margin.left + 10) + "," + (yScale(-5)) + ")")
 		.text('Avance')
 		.attr('fill', '#FFD966')
-		.attr('font-size', 12)
+		.attr('font-size', 16)
 
 	// Bars
 	var bars = svg.append('g')
@@ -216,7 +272,7 @@ export function generateBarGraph (container, data) {
   // Delete existing content
   container.html('')
   // Set size
-  var width = container.node().getBoundingClientRect().width - 300
+  var width = container.node().getBoundingClientRect().width
   var height = container.node().getBoundingClientRect().height
   // Create svg
 	var margin = {top: 50, right: 100, bottom: 200, left: 100}
