@@ -1,6 +1,10 @@
 const FONT_SIZE = 16
-const BAR_STROKE_COLOR = '#8DBA74'
 const BAR_FILL_COLOR = '#D5E8D4'
+const BAR_STROKE_COLOR = '#8DBA74'
+const BAR_FILL_COLOR_POSITIVE = '#D5E8D4'
+const BAR_STROKE_COLOR_POSITIVE = '#8DBA74'
+const BAR_STROKE_COLOR_NEGATIVE = '#C57471'
+const BAR_FILL_COLOR_NEGATIVE = '#F8CECC'
 const BAR_STROKE_WIDTH = 2
 
 /**
@@ -10,30 +14,44 @@ export function generateViz2 (data) {
     var container = d3.select('#candlestick-graph-container')
     var candlestickContainer = container.append('div')
         .style('width', '100%')
-        .style('height', '50%')
+        .style('height', '55%')
     var barGraphContainer = container.append('div')
         .style('width', '100%')
-        .style('height', '50%')
+        .style('height', '45%')
 
     // TODO: Fetch data
     var stops = []
     var amounts = []
+		var delay = []
     let stopsList = data[0].girouettes[0].voyages[0].arrets
     for(let stop in stopsList) {
         stops.push(stopsList[stop]["nomArret"])
         amounts.push(Math.floor(Math.random() * 70))
+				delay.push(Math.random() * (50 - (-10)) -10)
     }
 		data = {}
 		data.stops = stops
 		data.amounts = amounts
-    console.log(data.stops)
-    console.log(data.amounts)
+		data.delay = delay
 
     // Regenerate graphs on resize
-   // new ResizeObserver(() => { generateTopGraph(candlestickContainer, data) })
-    //    .observe(candlestickContainer.node())
-    new ResizeObserver(() => { generateBottomGraph(barGraphContainer, data) })
-        .observe(barGraphContainer.node())
+
+	new ResizeObserver(() => { generateTopGraph(candlestickContainer, data) })
+		.observe(candlestickContainer.node())
+	new ResizeObserver(() => { generateBottomGraph(barGraphContainer, data) })
+		.observe(barGraphContainer.node())
+
+		//setLegend(candlestickContainer);
+}
+
+/**
+ * @param {Selection} container The div to generate the graph in
+ * @param {object} data The data to fetch
+ */
+ export function generateTopGraph (container, data) {
+  // Generate common graph
+  data.title = 'Variation de la ponctualité'
+  var [svg] = generateCandleGraph(container, data)
 }
 
 /**
@@ -44,9 +62,147 @@ export function generateBottomGraph (container, data) {
   // Generate common graph
   data.title = 'Achalandage Moyen'
   var [svg] = generateBarGraph(container, data)
-  // Set y axis label
-  svg.select('#y-axis > .label')
-    .text('Nombre de personnes\npar jour')
+}
+
+/**
+ * @param {Selection} container The div to generate the graph in
+ * @param {object} data The data to display
+ * @returns {Selection} The generated graph as svg
+ */
+ export function generateCandleGraph (container, data) {
+  // ===================== SETUP =====================
+  
+  // Delete existing content
+  container.html('')
+  // Set size
+  var width = container.node().getBoundingClientRect().width - 300
+  var height = container.node().getBoundingClientRect().height
+  // Create svg
+	var margin = {top: 50, right: 100, bottom: 25, left: 100}
+	var BAR_WIDTH = (width - margin.left - margin.right) / data.stops.length
+  var svg = container.append('svg')
+		.attr("width", width)
+		.attr("height", height)
+
+  // ===================== OTHER =====================
+
+	// X axis
+	var xScale = d3.scaleBand()
+		.range([ margin.left, width - margin.right])
+		.domain(data.stops)
+
+	// Add Y axis
+	var yScale = d3.scaleLinear()
+		.domain([-10, 50])
+		.range([height - margin.bottom, margin.top]);
+	svg.append("g")
+		.attr("transform", "translate(" + margin.left + ", 0 )")
+		.call(d3.axisLeft(yScale));
+
+	//Y Title
+	svg.append("text")
+	.attr("transform", "translate(" + (margin.right - 80) + "," + (margin.top - 10) + ")")
+	.append('tspan')
+	.attr('x', 0)
+	.attr('dy', 5)
+	.text('Minutes')
+	.attr('fill', '#898989')
+	.attr('font-size', 12)
+	
+	// Draw axis line 0 
+	var xAxis = svg.append('g')
+		.attr('id', 'x-axis')
+  // Draw axis line
+  xAxis.append('path')
+    .attr('d', d3.line()([
+      [margin.left, yScale(0)],
+      [width - margin.left  , yScale(0)]
+    ]))
+    .attr('stroke', 'black')
+		.style("stroke-dasharray","3,3")
+		
+	// Draw axis line 5 
+	var xAxis = svg.append('g')
+		.attr('id', 'x-axis')
+  // Draw axis line
+  xAxis.append('path')
+    .attr('d', d3.line()([
+      [margin.left, yScale(5)],
+      [width - margin.left  , yScale(5)]
+    ]))
+    .attr('stroke', 'black')
+		.style("stroke-dasharray","3,3")
+
+	//Add right labels
+	svg.append("text")
+		.attr("transform", "translate(" + (width - margin.left + 10) + "," + (yScale(25)) + ")")
+		.text('Retard')
+		.attr('fill', '#D7625D')
+		.attr('font-size', 12)
+
+	svg.append("text")
+			.text('Ponctuel')
+			.attr('x', width - margin.left + 10)
+      .attr('y', (yScale(2.5)))
+      .attr('fill', '#577845')
+			.attr('font-size', 12)
+
+	svg.append("text")
+		.attr("transform", "translate(" + (width - margin.left + 10) + "," + (yScale(-5)) + ")")
+		.text('Avance')
+		.attr('fill', '#FFD966')
+		.attr('font-size', 12)
+
+	// Bars
+	var bars = svg.append('g')
+	.attr('id', 'bars')
+	var previousDelay = 0;
+	var fillColor = BAR_FILL_COLOR_NEGATIVE
+	var strockeColor = BAR_STROKE_COLOR_NEGATIVE
+	console.log(data.delay)
+  for (let i = 0; i < data.delay.length; i++) {
+    const x = xScale(data.stops[i])
+    const y = yScale(data.delay[i])
+		var height = 0;
+		var yPos = y;
+		if(data.delay[i] > previousDelay) {
+			height = yScale(previousDelay) - y
+			fillColor = BAR_FILL_COLOR_NEGATIVE
+			strockeColor = BAR_STROKE_COLOR_NEGATIVE
+		} else if (data.delay[i] < previousDelay) {
+			yPos = yScale(previousDelay);
+			height = -(yScale(previousDelay) - yScale(data.delay[i]))
+			fillColor = BAR_FILL_COLOR_POSITIVE
+			strockeColor = BAR_STROKE_COLOR_POSITIVE
+		}
+		bars.append('rect')
+		.attr('x', x)
+		.attr('width', xScale.bandwidth())
+		.attr('height', height)
+		.attr('y', yPos)
+		.attr('fill', fillColor)
+		.attr('stroke', strockeColor)
+		.attr('stroke-width', BAR_STROKE_WIDTH)
+		.attr('class', `stop${i}`)
+		.on("mouseover", function(d, i) {
+			d3.select(this)
+				.attr('stroke-width', BAR_STROKE_WIDTH * 2)
+		})
+		.on("mouseout", function() {
+			d3.select(this)
+				.attr('stroke-width', BAR_STROKE_WIDTH)
+		});
+		previousDelay = data.delay[i]
+  }
+
+  // Draw Title
+  svg.append('text')
+    .attr('x', (width - margin.right - margin.left) / 2 + margin.left)
+    .attr('y', margin.top - FONT_SIZE * 2)
+    .attr('text-anchor', 'middle')
+    .text(data.title)
+    .style('font-size', FONT_SIZE)
+  return [svg]
 }
 
 /**
@@ -60,10 +216,10 @@ export function generateBarGraph (container, data) {
   // Delete existing content
   container.html('')
   // Set size
-  var width = container.node().getBoundingClientRect().width
+  var width = container.node().getBoundingClientRect().width - 300
   var height = container.node().getBoundingClientRect().height
   // Create svg
-	var margin = {top: 100, right: 100, bottom: 200, left: 100}
+	var margin = {top: 50, right: 100, bottom: 200, left: 100}
 	var BAR_WIDTH = (width - margin.left - margin.right) / data.stops.length
   var svg = container.append('svg')
 		.attr("width", width)
@@ -75,7 +231,6 @@ export function generateBarGraph (container, data) {
 	var xScale = d3.scaleBand()
 		.range([ margin.left, width - margin.right])
 		.domain(data.stops)
-		.padding(0.4)
 	svg.append("g")
 		.attr("transform", "translate(0," + (height-margin.bottom) + ")")
 		.call(d3.axisBottom(xScale))
@@ -96,7 +251,7 @@ export function generateBarGraph (container, data) {
 		.range([height - margin.bottom, margin.top]);
 	svg.append("g")
 		.attr("transform", "translate(" + margin.left + ", 0 )")
-		.call(d3.axisLeft(yScale));
+		.call(d3.axisLeft(yScale))
 
 	//Y Title
 	svg.append("text")
@@ -115,6 +270,8 @@ export function generateBarGraph (container, data) {
 	.attr('x', 0)
 	.attr('dy', 10)
 	.text('personnes')
+	
+	// ===================== HOVER =====================
 
 	// Bars
 	var bars = svg.append('g')
@@ -130,7 +287,17 @@ export function generateBarGraph (container, data) {
       .attr('fill', BAR_FILL_COLOR)
       .attr('stroke', BAR_STROKE_COLOR)
       .attr('stroke-width', BAR_STROKE_WIDTH)
+			.attr('class', `stop${i}`)
+			.on("mouseover", function(d, i) {
+				d3.select(this)
+					.attr('stroke-width', BAR_STROKE_WIDTH * 2)
+			})
+			.on("mouseout", function() {
+				d3.select(this)
+					.attr('stroke-width', BAR_STROKE_WIDTH)
+			});
   }
+
   // Draw Title
   svg.append('text')
     .attr('x', (width - margin.right - margin.left) / 2 + margin.left)
