@@ -64,11 +64,17 @@ button:hover, button:active {
     height: 100%;
     width: 100%;
   }
-  a {
+
+#candlestick-graph-container {
+    height: 100%;
+    width: 100%;
+}
+
+a {
     display: flex;
     flex-grow: 0;
-  }
-  a.button {
+}
+a.button {
     -webkit-appearance: button;
     -moz-appearance: button;
     appearance: button;

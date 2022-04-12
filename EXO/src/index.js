@@ -4,6 +4,7 @@ import * as helper from './scripts/helper.js'
 import * as heatmap from './scripts/heatmap.js'
 import * as preprocess from './scripts/preprocess.js'
 import * as groupedQuantile from './scripts/grouped-quantile.js'
+import * as candlestick from './scripts/candlestick'
 
 /**
  * @file 
@@ -20,7 +21,7 @@ import * as groupedQuantile from './scripts/grouped-quantile.js'
   }
 
   helper.setCanvasSize(svgSize.width, svgSize.height)
-  helper.generateMapG(svgSize.width, svgSize.height)
+  //.generateMapG(svgSize.width, svgSize.height)
   helper.generateMarkerG(svgSize.width, svgSize.height)
   helper.appendGraphLabels(d3.select('.main-svg'))
   helper.initPanelDiv()
@@ -56,8 +57,8 @@ import * as groupedQuantile from './scripts/grouped-quantile.js'
       //console.log(csvData)
       preprocess.addDayType(csvData)
       preprocess.aggregateData(csvData, vizData, startDate, endDate, typeJour, ferie)
-      console.log(vizData)
       heatmap.drawHeatmap(vizData, 9, 'Lafontaine Via Gare  Saint-Jérôme', 'moyMinutesEcart')
+      candlestick.generateViz2(vizData, 9, 'Lafontaine Via Gare  Saint-Jérôme');
     })
   }
 })(d3)
