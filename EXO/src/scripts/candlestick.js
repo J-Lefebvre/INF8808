@@ -210,12 +210,13 @@ export function generateBottomGraph (container, data) {
 		.attr('font-size', 16)
 
 	// Bars
+	var lines = svg.append('g')
+	.attr('id', 'vertLine')
 	var bars = svg.append('g')
 	.attr('id', 'bars')
 	var previousDelay = 0;
 	var fillColor = BAR_FILL_COLOR_NEGATIVE
 	var strockeColor = BAR_STROKE_COLOR_NEGATIVE
-	console.log(data.delay)
   for (let i = 0; i < data.delay.length; i++) {
     const x = xScale(data.stops[i])
     const y = yScale(data.delay[i])
@@ -231,6 +232,17 @@ export function generateBottomGraph (container, data) {
 			fillColor = BAR_FILL_COLOR_POSITIVE
 			strockeColor = BAR_STROKE_COLOR_POSITIVE
 		}
+		lines.append("line")
+		.attr("x1", x + (xScale.bandwidth()/2)) 
+		.attr("x2", x + (xScale.bandwidth()/2))  //<<== and here
+		.attr("y1", yScale(-10))
+		.attr("y2",	yScale(50))
+		.attr('class', `stop${i} line`)
+		.style("stroke-width", 2)
+		.style("stroke", "black")
+		.style("fill", "none")
+		.style('visibility', 'hidden');
+
 		bars.append('rect')
 		.attr('x', x)
 		.attr('width', xScale.bandwidth())
@@ -240,14 +252,19 @@ export function generateBottomGraph (container, data) {
 		.attr('stroke', strockeColor)
 		.attr('stroke-width', BAR_STROKE_WIDTH)
 		.attr('class', `stop${i}`)
-		.on("mouseover", function(d, i) {
-			d3.select(this)
+		.on("mouseover", function(d) {
+			d3.selectAll(`.stop${i}`).raise()
 				.attr('stroke-width', BAR_STROKE_WIDTH * 2)
+			d3.selectAll(`.stop${i}.line`)
+				.style('visibility', 'visible')
 		})
 		.on("mouseout", function() {
-			d3.select(this)
+			d3.selectAll(`.stop${i}`)
 				.attr('stroke-width', BAR_STROKE_WIDTH)
+			d3.selectAll(`.stop${i}.line`)
+				.style('visibility', 'hidden')
 		});
+
 		previousDelay = data.delay[i]
   }
 
@@ -330,11 +347,24 @@ export function generateBarGraph (container, data) {
 	// ===================== HOVER =====================
 
 	// Bars
+	var lines = svg.append('g')
+	.attr('id', 'vertLine')
 	var bars = svg.append('g')
 	.attr('id', 'bars')
   for (let i = 0; i < data.amounts.length; i++) {
     const x = xScale(data.stops[i])
     const y = yScale(data.amounts[i])
+		lines.append("line")
+			.attr("x1", x + (xScale.bandwidth()/2)) 
+			.attr("x2", x + (xScale.bandwidth()/2))  //<<== and here
+			.attr("y1", yScale(0))
+			.attr("y2",	yScale(70))
+			.attr('class', `stop${i} line`)
+			.style("stroke-width", 2)
+			.style("stroke", "black")
+			.style("fill", "none")
+			.style('visibility', 'hidden');
+
     bars.append('rect')
 			.attr('x', x)
 			.attr('width', xScale.bandwidth())
@@ -344,13 +374,17 @@ export function generateBarGraph (container, data) {
       .attr('stroke', BAR_STROKE_COLOR)
       .attr('stroke-width', BAR_STROKE_WIDTH)
 			.attr('class', `stop${i}`)
-			.on("mouseover", function(d, i) {
-				d3.select(this)
+			.on("mouseover", function(d) {
+				d3.selectAll(`.stop${i}`).raise()
 					.attr('stroke-width', BAR_STROKE_WIDTH * 2)
+				d3.selectAll(`.stop${i}.line`)
+					.style('visibility', 'visible')
 			})
 			.on("mouseout", function() {
-				d3.select(this)
+				d3.selectAll(`.stop${i}`)
 					.attr('stroke-width', BAR_STROKE_WIDTH)
+				d3.selectAll(`.stop${i}.line`)
+					.style('visibility', 'hidden')
 			});
   }
 
