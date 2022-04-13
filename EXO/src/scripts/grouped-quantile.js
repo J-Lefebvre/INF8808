@@ -117,6 +117,46 @@ export function generateDelayGraph (container, data) {
   // Set y axis label
   svg.select('#y-axis > .label')
     .text('Minute')
+
+  // Legend
+  const legend = svg.insert('g', '#x-axis')
+  const middleY = (HEIGHT - MARGIN.top - MARGIN.bottom) / 2 + MARGIN.top
+  const squareWidth = FONT_SIZE * 2 / 3
+  const paddingX = FONT_SIZE * 2
+  const paddingY = FONT_SIZE * 1.5
+  legend.append('rect')
+    .attr('width', squareWidth)
+    .attr('x', WIDTH - MARGIN.right + FONT_SIZE)
+    .attr('height', squareWidth)
+    .attr('y', middleY - paddingY)
+    .attr('stroke', QUANTILE_STROKE_COLOR)
+    .attr('fill', GRADIENT_COLORS[0])
+  legend.append('text')
+    .attr('x', WIDTH - MARGIN.right + paddingX)
+    .attr('y', middleY - paddingY + squareWidth)
+    .text('Retard')
+  legend.append('rect')
+    .attr('width', squareWidth)
+    .attr('x', WIDTH - MARGIN.right + FONT_SIZE)
+    .attr('height', squareWidth)
+    .attr('y', middleY)
+    .attr('stroke', QUANTILE_STROKE_COLOR)
+    .attr('fill', GRADIENT_COLORS[1])
+  legend.append('text')
+    .attr('x', WIDTH - MARGIN.right + paddingX)
+    .attr('y', middleY + squareWidth)
+    .text('Ponctuel')
+  legend.append('rect')
+    .attr('width', squareWidth)
+    .attr('x', WIDTH - MARGIN.right + FONT_SIZE)
+    .attr('height', squareWidth)
+    .attr('y', middleY + paddingY)
+    .attr('stroke', QUANTILE_STROKE_COLOR)
+    .attr('fill', GRADIENT_COLORS[2])
+  legend.append('text')
+    .attr('x', WIDTH - MARGIN.right + paddingX)
+    .attr('y', middleY + paddingY + squareWidth)
+    .text('Avance')
 }
 
 /**
