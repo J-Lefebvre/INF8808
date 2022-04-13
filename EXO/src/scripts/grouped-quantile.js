@@ -1,13 +1,14 @@
 import * as helper from './helper.js'
 
-const MARGIN = { top: 100, right: 80, bottom: 150, left: 150 }
+const MARGIN = { top: 52, right: 100, bottom: 150, left: 100 }
 const FONT_SIZE = 16
 const DIRECTIONS_ANGLE = -45
 const QUANTILE_STROKE_COLOR = 'black'
 const QUANTILE_FILL_COLOR = 'lightgray'
 const QUANTILE_STROKE_WIDTH = 2
 const NUMBER_OF_TICKS = 10
-const GRADIENT_COLORS = ['#ffe4e4', '#e4ffe4', '#ffffe4']
+const GRADIENT_COLORS = ['#ff9999', '#99ff99', '#ffff99']
+const GRADIENT_THRESHOLDS = ['15', '10', '0', '-5']
 
 /**
  *
@@ -86,26 +87,32 @@ export function generateDelayGraph (container, data) {
   svg.insert('rect', '#x-axis')
     .attr('width', WIDTH - MARGIN.left - MARGIN.right)
     .attr('x', MARGIN.left)
-    .attr('height', dataScale(15) - MARGIN.top)
+    .attr('height', dataScale(GRADIENT_THRESHOLDS[0]) - MARGIN.top)
     .attr('y', MARGIN.top)
     .attr('fill', GRADIENT_COLORS[0])
   svg.insert('rect', '#x-axis')
     .attr('width', WIDTH - MARGIN.left - MARGIN.right)
     .attr('x', MARGIN.left)
-    .attr('height', dataScale(5) - dataScale(15))
-    .attr('y', dataScale(15))
+    .attr('height', dataScale(GRADIENT_THRESHOLDS[1]) - dataScale(GRADIENT_THRESHOLDS[0]))
+    .attr('y', dataScale(GRADIENT_THRESHOLDS[0]))
     .attr('fill', 'url(#late-grad)')
   svg.insert('rect', '#x-axis')
     .attr('width', WIDTH - MARGIN.left - MARGIN.right)
     .attr('x', MARGIN.left)
-    .attr('height', dataScale(-5) - dataScale(5))
-    .attr('y', dataScale(5))
+    .attr('height', dataScale(GRADIENT_THRESHOLDS[2]) - dataScale(GRADIENT_THRESHOLDS[1]))
+    .attr('y', dataScale(GRADIENT_THRESHOLDS[1]))
+    .attr('fill', GRADIENT_COLORS[1])
+  svg.insert('rect', '#x-axis')
+    .attr('width', WIDTH - MARGIN.left - MARGIN.right)
+    .attr('x', MARGIN.left)
+    .attr('height', dataScale(GRADIENT_THRESHOLDS[3]) - dataScale(GRADIENT_THRESHOLDS[2]))
+    .attr('y', dataScale(GRADIENT_THRESHOLDS[2]))
     .attr('fill', 'url(#early-grad)')
   svg.insert('rect', '#x-axis')
     .attr('width', WIDTH - MARGIN.left - MARGIN.right)
     .attr('x', MARGIN.left)
-    .attr('height', HEIGHT - MARGIN.bottom - dataScale(-5))
-    .attr('y', dataScale(-5))
+    .attr('height', HEIGHT - MARGIN.bottom - dataScale(GRADIENT_THRESHOLDS[3]))
+    .attr('y', dataScale(GRADIENT_THRESHOLDS[3]))
     .attr('fill', GRADIENT_COLORS[2])
   // Set y axis label
   svg.select('#y-axis > .label')
@@ -247,7 +254,7 @@ export function generateGroupedQuantileGraph (container, data) {
     yAxis.append('text')
       .attr('text-anchor', 'end')
       .attr('x', MARGIN.left - FONT_SIZE)
-      .attr('y', y + FONT_SIZE / 2)
+      .attr('y', y + FONT_SIZE / 3)
       .text(step)
       .style('font-size', FONT_SIZE)
     // Draw ticks
@@ -306,21 +313,15 @@ export function generateGroupedQuantileGraph (container, data) {
       const quantile = bars.append('g')
         .attr('class', `direction${i} quantile`)
         .style('visibility', 'hidden')
+      const x = directionsScale(data.directions[i]) + (i % 2 === 0 ? -1 : 1) * (BAR_WIDTH / 2 + FONT_SIZE / 2)
+      const y = dataScale(data.quantileSets[i][j])
       quantile.append('text')
-        .attr('x', directionsScale(data.directions[i]) + (i % 2 === 0 ? -1 : 1) * (BAR_WIDTH / 2 + FONT_SIZE / 2))
-        .attr('y', dataScale(data.quantileSets[i][j]))
+        .attr('x', x)
+        .attr('y', y)
         .attr('text-anchor', (i % 2 === 0 ? 'end' : 'start'))
         .text(data.quantileSets[i][j])
         .style('font-size', FONT_SIZE)
         .attr('id', `quantile-text-${i}-${j}`)
-      // Text background
-      const textBoundingClientRect = quantile.node().getBoundingClientRect()
-      quantile.insert('rect', `#quantile-text-${i}-${j}`)
-        .attr('width', textBoundingClientRect.width)
-        .attr('x', textBoundingClientRect.x)
-        .attr('height', textBoundingClientRect.height)
-        .attr('y', textBoundingClientRect.y)
-        .attr('fill', 'white')
     }
   }
 
