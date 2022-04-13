@@ -35,7 +35,7 @@ export function generateViz2 (data) {
     for(let stop in stopsList) {
         stops.push(stopsList[stop]["nomArret"])
         amounts.push(Math.floor(Math.random() * 70))
-				delay.push(Math.random() * (50 - (-10)) -10)
+				delay.push(Math.floor(Math.random() * (50 - (-10)) -10))
     }
 	data = {}
 	data.stops = stops
@@ -257,14 +257,29 @@ export function generateBottomGraph (container, data) {
 				.attr('stroke-width', BAR_STROKE_WIDTH * 2)
 			d3.selectAll(`.stop${i}.line`)
 				.style('visibility', 'visible')
+			d3.selectAll(`.stop${i}.textValue`)
+				.style('visibility', 'visible')
+			d3.selectAll(`.axisText${i}`)
+				.attr("font-weight", 1000)
 		})
 		.on("mouseout", function() {
 			d3.selectAll(`.stop${i}`)
 				.attr('stroke-width', BAR_STROKE_WIDTH)
 			d3.selectAll(`.stop${i}.line`)
 				.style('visibility', 'hidden')
+			d3.selectAll(`.stop${i}.textValue`)
+				.style('visibility', 'hidden')
+			d3.selectAll(`.axisText${i}`)
+				.attr("font-weight", 0)
 		});
-
+		bars.append("text")
+			.text(`${data.delay[i]}`)
+			.attr('x', x + xScale.bandwidth() + 5)
+			.attr('y', y - 10)
+			.attr('fill', 'black')
+			.attr('class', `stop${i} textValue`)
+			.attr('font-size', 16)
+			.style('visibility', 'hidden')
 		previousDelay = data.delay[i]
   }
 
@@ -309,6 +324,7 @@ export function generateBarGraph (container, data) {
 		.call(d3.axisBottom(xScale))
 		.selectAll("text")
 			.attr("transform", "translate(-10,0)rotate(-45)")
+			.attr("class", function(d,i) {return "axisText" + i})
 			.style("text-anchor", "end");
 
 	//X Title
@@ -356,7 +372,7 @@ export function generateBarGraph (container, data) {
     const y = yScale(data.amounts[i])
 		lines.append("line")
 			.attr("x1", x + (xScale.bandwidth()/2)) 
-			.attr("x2", x + (xScale.bandwidth()/2))  //<<== and here
+			.attr("x2", x + (xScale.bandwidth()/2)) 
 			.attr("y1", yScale(0))
 			.attr("y2",	yScale(70))
 			.attr('class', `stop${i} line`)
@@ -379,13 +395,29 @@ export function generateBarGraph (container, data) {
 					.attr('stroke-width', BAR_STROKE_WIDTH * 2)
 				d3.selectAll(`.stop${i}.line`)
 					.style('visibility', 'visible')
+				d3.selectAll(`.stop${i}.textValue`)
+					.style('visibility', 'visible')
+				d3.selectAll(`.axisText${i}`)
+				.attr("font-weight", 1000)
 			})
 			.on("mouseout", function() {
 				d3.selectAll(`.stop${i}`)
 					.attr('stroke-width', BAR_STROKE_WIDTH)
 				d3.selectAll(`.stop${i}.line`)
 					.style('visibility', 'hidden')
+				d3.selectAll(`.stop${i}.textValue`)
+					.style('visibility', 'hidden')
+				d3.selectAll(`.axisText${i}`)
+					.attr("font-weight", 0)
 			});
+		bars.append("text")
+			.text(`${data.amounts[i]}`)
+			.attr('x', x + xScale.bandwidth() + 5)
+			.attr('y', y -10)
+			.attr('fill', 'black')
+			.attr('class', `stop${i} textValue`)
+			.attr('font-size', 16)
+			.style('visibility', 'hidden')
   }
 
   // Draw Title
