@@ -46,7 +46,9 @@ Structure des données pour une ligne et une girouette données:
 export function drawHeatmap (vizData, ligne, girouette, indicateur) {
   var posLigne = vizData.findIndex(e => e.ligne === ligne)
   var posGirouette = vizData[posLigne].girouettes.findIndex(e => e.girouette === girouette)
-  var dataUtiles = vizData[posLigne].girouettes[posGirouette];
+  var dataUtiles = vizData[posLigne].girouettes[posGirouette]
+
+  
 
 /*
   for (var v = 0; v < vizData[posLigne].girouettes[posGirouette].voyages.length; v++) {
