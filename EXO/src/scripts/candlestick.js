@@ -34,10 +34,13 @@ export function generateViz2 (data, line, direction, trajectNumber) {
 	data.amounts = dataArray[2]
 	
   // Regenerate graphs on resize
-	new ResizeObserver(() => { generateTopGraph(candlestickContainer, data); setLegend(legendContainer); })
+	if(candlestickContainer.node()) {
+		new ResizeObserver(() => { generateTopGraph(candlestickContainer, data); setLegend(legendContainer); })
 		.observe(candlestickContainer.node())
-	new ResizeObserver(() => { generateBottomGraph(barGraphContainer, data) })
+		new ResizeObserver(() => { generateBottomGraph(barGraphContainer, data) })
 		.observe(barGraphContainer.node())
+	}
+	
 }
 
 /**
