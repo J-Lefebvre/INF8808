@@ -15,17 +15,23 @@ export function generateViz2 (data, line, direction, trajectNumber) {
 	var topDiv = container.append('div')
 		.style('width', '100%')
 		.style('height', '65%')
+		.style('min-width', '900px')
 	var candlestickContainer = topDiv.append('div')
-			.style('width', '90%')
+			.style('width', '80%')
 			.style('height', '100%')
 			.style('float', 'left')
 	var legendContainer = topDiv.append('div')
-			.style('width', '10%')
-			.style('height', '100%')
+			.style('width', '170px')
+			.style('height', '170px')
 			.style('float', 'right')
-	var barGraphContainer = container.append('div')
-			.style('width', '90%')
+	var bottomDiv = container.append('div')
+			.style('width', '100%')
 			.style('height', '35%')
+			.style('min-height', '400px')
+			.style('min-width', '900px')
+	var barGraphContainer = bottomDiv.append('div')
+			.style('width', '80%')
+			.style('height', '100%')
 
 	// Fetch data
 	var dataArray = getData(data, line, direction, trajectNumber);
@@ -73,7 +79,7 @@ export function getData (vizData, line, direction, trajectNumber) {
  export function setLegend (container) {
 	container.html('')
 	var legendWidth = container.node().getBoundingClientRect().width
-  var legendHeight = container.node().getBoundingClientRect().height * 0.20
+  var legendHeight = container.node().getBoundingClientRect().height
 	var svgLegend = container.append('svg')
 		.attr('width', legendWidth)
 		.attr('height', legendHeight)
@@ -256,7 +262,7 @@ export function generateBottomGraph (container, data) {
 		lines.append("line")
 		.attr("x1", x + (xScale.bandwidth()/2)) 
 		.attr("x2", x + (xScale.bandwidth()/2))
-		.attr("y1", yScale(-5))
+		.attr("y1", yScale(Math.min(...data.delay)))
 		.attr("y2",	yScale(Math.max(...data.delay)))
 		.attr('class', `stop${i} line`)
 		.style("stroke-width", 2)
