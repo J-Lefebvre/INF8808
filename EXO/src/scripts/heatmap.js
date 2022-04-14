@@ -34,8 +34,24 @@ Structure des données pour une ligne et une girouette données:
 
 
 */
+import * as helper from './helper.js'
 
 
+// ===================== CONSTANTES  =====================
+
+const ID_VIZ = 'graph-heatmap';
+const MARGIN = { top: 250, right: 250, bottom: 300, left: 100 }
+const HEIGHT = 1200
+const ID_X_AXIS = 'x axis'
+const ID_Y_AXIS = 'y axis'
+
+
+let bounds
+let svgSize
+let graphSize
+
+
+//////////////////////////////////////////////////////////////////
 
 /**
  * @param vizData       // les données
@@ -43,13 +59,45 @@ Structure des données pour une ligne et une girouette données:
  * @param girouette     // le nom de la girouette, type string
  * @param indicateur    // donnee a visualisaer, 1 choix pamis [Ponctualite, Achalandage, IndiceMixte]
  */
-export function drawHeatmap (vizData, ligne, girouette, indicateur) {
+ export function drawHeatmap (vizData, ligne, girouette, indicateur) {
+  indicateur = 'Ponctualite'
+  var moyenne, liste
+  switch (indicateur) {
+    case 'Ponctualite' :
+      moyenne = 'moyMinutesEcart'
+      liste = 'minutesEcart'
+      break
+
+    case 'Achalandage' :
+      moyenne = 'moyNClients'
+      liste = 'nClients'
+      break
+
+    case 'IndiceMixte' :
+      moyenne = 'moyMinutesEcartClient'
+      liste = 'minutesEcartClient'
+      break
+  }
+
   var posLigne = vizData.findIndex(e => e.ligne === ligne)
   var posGirouette = vizData[posLigne].girouettes.findIndex(e => e.girouette === girouette)
   var dataUtiles = vizData[posLigne].girouettes[posGirouette]
+  var flattenData = flatten_Data(dataUtiles, moyenne, liste)
 
-  
+  let g = generateG()
+  setSizing()
+  appendAxes(g) 
+  let Xscale = createXScale(flattenData)
+  let Yscale = createYScale(dataUtiles)
+  let colorScale = createColorScale(flattenData)
 
+  //console.log(Xscale)
+  appendRects(flattenData)
+  updateRects(Xscale, Yscale, colorScale)
+
+  drawXAxis(Xscale)
+  drawYAxis(Yscale)
+  rotateXTicks()
 /*
   for (var v = 0; v < vizData[posLigne].girouettes[posGirouette].voyages.length; v++) {
     for (var a = 0; a < vizData[posLigne].girouettes[posGirouette].voyages[v].arrets.length; a++) {
@@ -58,7 +106,483 @@ export function drawHeatmap (vizData, ligne, girouette, indicateur) {
     }
   }
   */
+ build()
+};
+
+// ===================== PROCESS DATA =====================
+
+/**
+ * @param {*} dataStructurees donnees structures issues du preprocessing, pour une ligne et une girouette
+ * @param {string} nom_moy
+ * @param {string} nom_liste
+* retourne une liste {object[]}, ou chaque element sont les donnes pour un arret et un voyage
+ */
+function flatten_Data (dataStructurees, nom_moy, nom_liste){
+  let flattenData = [];
+
+  (dataStructurees.voyages).forEach((v)=> {
+      let numVoyage = v.voyage;
+      (v.arrets).forEach((a) =>  {
+          let codeArret = a.codeArret
+          let nomArret = a.nomArret
+          let moyenne = a[nom_moy]
+          let liste = a[nom_liste]
+          flattenData.push({
+            voyage : numVoyage,
+            codeArret : codeArret,
+            nomArret : nomArret,
+            sequenceArret : a.sequenceArret,
+            moyenne : moyenne,
+            liste : liste
+          })
+
+      })
+    })
+    return flattenData
+};
+
+
+
+
+  // ===================== SETUP =====================
+
+
+//CANVAS
+
+/**
+ * Generates the SVG element g which will contain the data visualisation.
+ *
+ * @returns {*} The d3 Selection for the created g element
+ */
+ export function generateG () {
+
+  return d3.select('.graph')
+    .select('.main-svg')
+    .append('g')
+    .attr('id', ID_VIZ)
+    .attr('transform',
+      'translate(' + MARGIN.left + ',' + MARGIN.top + ')')
 }
+
+/**
+ *   This function handles the graph's sizing.
+ */
+export function setSizing () {
+  bounds = d3.select('.graph').node().getBoundingClientRect()
+
+  svgSize = {
+    width: bounds.width,
+    height: HEIGHT
+  }
+
+  graphSize = {
+    width: svgSize.width - MARGIN.right - MARGIN.left,
+    height: svgSize.height - MARGIN.bottom - MARGIN.top
+  }
+
+  helper.setCanvasSize(svgSize.width, svgSize.height)
+}
+
+   /**
+     *   This function builds the graph.
+     */
+export function build () {
+  viz.updateXScale(xScale, data, graphSize.width, util.range)
+  viz.updateYScale(yScale, neighborhoodNames, graphSize.height)
+
+  viz.drawXAxis(xScale)
+  viz.drawYAxis(yScale, graphSize.width)
+
+  viz.rotateXTicks()
+
+  viz.updateRects(xScale, yScale, colorScale)
+
+  hover.setRectHandler(xScale, yScale, hover.rectSelected, hover.rectUnselected, hover.selectTicks, hover.unselectTicks)
+
+  legend.draw(margin.left / 2, margin.top + 5, graphSize.height - 10, 15, 'url(#gradient)', colorScale)
+}
+
+
+
+
+//AXIS
+/**
+ * Appends an SVG g element which will contain the axes.
+ *
+* @param {*} g The d3 Selection of the graph's g SVG element
+*/
+export function appendAxes (g) {
+ g.append('g')
+   .attr('class', ID_X_AXIS)
+
+ g.append('g')
+   .attr('class', ID_Y_AXIS)
+}
+
+
+
+//SCALES (x, y, color Negative, color positive)
+/**
+ * @param {*} flattenData donnees structures issues du preprocessing, pour une ligne et une girouette
+ * retourne l'echelle des X, correspondant aux arrets
+ */
+ export function createXScale(flattenData){
+
+  // obtenir tous les arrets dans l'ordre
+ let xScale = d3.scaleBand().padding(0.05);
+ let map_arret = d3.map();
+ flattenData.forEach(a => map_arret.set(a.sequenceArret, a.nomArret) );
+ let arrets = map_arret.keys();
+ let arret_sort = arrets.sort((a,b)=> d3.ascending(+a, +b));
+ let nom_arret_sort = [... arret_sort.map(a => map_arret.get(a) )];
+ xScale.domain(nom_arret_sort).range([0, graphSize.width]);
+
+ return xScale
+};
+
+/**
+ * @param {*} dataStructurees donnees structures issues du preprocessing, pour une ligne et une girouette
+ * retourne l'echelle des Y, correspondant aux n° de voyage
+ */
+ export function createYScale(dataStructurees){
+  let yScale = d3.scaleBand().padding(0.05);
+
+  const voyages = (dataStructurees.voyages).map(v => v.voyage);
+  const dom = d3.extent(voyages);
+  yScale.domain(d3.range(dom[0],dom[1])).range([0, graphSize.height]);
+
+
+
+  return yScale
+};
+
+/**
+ * @param {object[]} dataFlatten donnees applaties issues du preprocessing additionnel, pour une ligne et une girouette
+ * @param indicateur    // donnee a visualisaer, 1 choix pamis [Ponctualite, Achalandage, IndiceMixte]
+ * retourne l'echelle des couleurs des donnes vizualisees, en fonction du type de donnees
+ */
+ export function createColorScale(flattenData) {
+  const retard = (flattenData).map(d => d.moyenne)
+  const dom = d3.extent(retard)
+
+  var color = d3.scaleLinear()
+  .domain([dom[0], 0, dom[1]])
+  .range(["red", "white", "green"]);
+
+  return color
+}
+
+
+
+
+
+// ===================== DRAW RECTANGLES =====================
+
+
+/**
+ * @param {object[]} data The data to use for binding
+ */
+ export function appendRects(data) {
+  // TODO : Append SVG rect elements
+  d3.select("#"+ID_VIZ)
+    .append("g")
+    .selectAll("g")
+    .data(data)
+    .enter()
+    .append("g")
+    .append("rect");
+}
+
+/**
+ * After the rectangles have been appended, this function dictates
+ * their position, size and fill color.
+ *
+ * @param {*} xScale The x scale used to position the rectangles
+ * @param {*} yScale The y scale used to position the rectangles
+ * @param {*} colorScale The color scale used to set the rectangles' colors
+ */
+ export function updateRects(xScale, yScale, colorScale) {
+  // TODO : Set position, size and fill of rectangles according to bound data
+  d3.select("#"+ID_VIZ)
+    .selectAll("rect")
+    .attr("x", function (d) {
+      return xScale(d.nomArret);
+    })
+    .attr("y", function (d) {
+      return yScale(d.voyage);
+    })
+    .attr("width", xScale.bandwidth())
+    .attr("height", yScale.bandwidth())
+    .attr("fill", function (d) {
+      return colorScale(d.moyenne);
+    })
+    .attr("class", "rectangleChaleur");
+}
+
+
+
+
+// ===================== DRAW AXIS =====================
+
+
+/**
+ *  Draws the X axis at the top of the diagram.
+ *
+ *  @param {*} xScale The scale to use to draw the axis
+ */
+ export function drawXAxis(xScale) {
+  // TODO : Draw X axis
+  d3.select(".x.axis")
+    .attr("transform", "translate(0, "+graphSize.height+" )")
+    .call(d3.axisBottom(xScale))
+    .selectAll("text")
+    .style("font-size", "14px")
+    .attr("id", (x) => {
+      return  x.replace(/\s+/g, "");
+    });
+}
+
+/**
+ * Draws the Y axis to the right of the diagram.
+ *
+ * @param {*} yScale The scale to use to draw the axis
+ * @param {number} width The width of the graphic
+ */
+ export function drawYAxis(yScale) {
+  // TODO : Draw Y axis
+  d3.select(".y.axis")
+    .call(d3.axisLeft(yScale))
+    .selectAll("text")
+    .style("font-size", "14px")
+    .attr("id", (x) => {
+      return x;
+    });
+}
+
+/**
+ * Rotates the ticks on the X axis 45 degrees towards the left.
+ */
+ export function rotateXTicks() {
+  // TODO : Rotate X axis' ticks
+  d3.select(".x.axis").selectAll("text")
+  .attr("transform", "rotate(-45)")
+  .attr('text-anchor', 'end');
+}
+
+
+
+
+
+
+// ===================== HOVERING FEATURE =====================
+
+
+/**
+ * Sets up an event handler for when the mouse enters and leaves the squares
+ * in the heatmap. When the square is hovered, it enters the "selected" state.
+ *
+ * The tick labels for the year and neighborhood corresponding to the square appear
+ * in bold.
+ *
+ * @param {*} xScale The xScale to be used when placing the text in the square
+ * @param {*} yScale The yScale to be used when placing the text in the square
+ * @param {Function} rectSelected The function to call to set the mode to "selected" on the square
+ * @param {Function} rectUnselected The function to call to remove "selected" mode from the square
+ * @param {Function} selectTicks The function to call to set the mode to "selected" on the ticks
+ * @param {Function} unselectTicks The function to call to remove "selected" mode from the ticks
+ */
+ export function setRectHandler(
+  xScale,
+  yScale,
+  rectSelected,
+  rectUnselected,
+  selectTicks,
+  unselectTicks
+) {
+  // TODO : Select the squares and set their event handlers
+  d3.selectAll(" .rectangleChaleur")
+    .on("mouseenter", function (d) {
+      rectSelected(this, xScale, yScale);
+      selectTicks(d.Arround_Nom, d.Plantation_Year);
+    })
+    .on("mouseleave", function () {
+      unselectTicks();
+      rectUnselected(this);
+    });
+}
+
+/**
+ * The function to be called when one or many rectangles are in "selected" state,
+ * meaning they are being hovered
+ *
+ * The text representing the number of trees associated to the rectangle
+ * is displayed in the center of the rectangle and their opacity is lowered to 75%.
+ *
+ * @param {*} element The selection of rectangles in "selected" state
+ * @param {*} xScale The xScale to be used when placing the text in the square
+ * @param {*} yScale The yScale to be used when placing the text in the square
+ */
+export function rectSelected(element, xScale, yScale) {
+  // TODO : Display the number of trees on the selected element
+  // Make sure the nimber is centered. If there are 1000 or more
+  // trees, display the text in white so it contrasts with the background.
+  const THRESHOLD_TREES = 1000;
+  d3.select(element).attr("opacity", 0.75);
+
+  d3.select(element.parentNode)
+    .append("text")
+    .attr("dx", function (d) {
+      return xScale(d.Plantation_Year) + xScale.bandwidth() / 2;
+    })
+    .attr("dy", function (d) {
+      return yScale(d.Arround_Nom) + (2 * yScale.bandwidth()) / 3;
+    })
+    .attr("text-anchor", "middle")
+    .attr("font-size", "0.8em")
+    .style("fill", function (d) {
+      if (d.Comptes >= THRESHOLD_TREES) return "white";
+      else return "black";
+    })
+    .text(function (d) {
+      return d.Comptes;
+    });
+}
+
+/**
+ * The function to be called when the rectangle or group
+ * of rectangles is no longer in "selected state".
+ *
+ * The text indicating the number of trees is removed and
+ * the opacity returns to 100%.
+ *
+ * @param {*} element The selection of rectangles in "selected" state
+ */
+export function rectUnselected(element) {
+  // TODO : Unselect the element
+  d3.select(element).attr("opacity", 1.0);
+  d3.select(element.parentNode).select("text").remove();
+}
+
+/**
+ * Makes the font weight of the ticks texts with the given name and year bold.
+ *
+ * @param {string} name The name of the neighborhood associated with the tick text to make bold
+ * @param {number} year The year associated with the tick text to make bold
+ */
+export function selectTicks(name, year) {
+  // TODO : Make the ticks bold
+  d3.select("#y" + year).attr("font-weight", "bold");
+  d3.select("#" + name.replace(/\s+/g, "")).attr("font-weight", "bold");
+}
+
+/**
+ * Returns the font weight of all ticks to normal.
+ */
+export function unselectTicks() {
+  // TODO : Unselect the ticks
+  d3.selectAll("text").attr("font-weight", "normal");
+}
+
+
+
+
+// ===================== LEGEND =====================
+
+
+
+/**
+ * Initializes the definition for the gradient to use with the
+ * given colorScale.
+ *
+ * @param {*} colorScale The color scale to use
+ */
+ export function initGradient(colorScale) {
+  const svg = d3.select(".heatmap-svg");
+  const defs = svg.append("defs");
+
+  const linearGradient = defs
+    .append("linearGradient")
+    .attr("id", "gradient")
+    .attr("x1", 0)
+    .attr("y1", 1)
+    .attr("x2", 0)
+    .attr("y2", 0);
+
+  linearGradient
+    .selectAll("stop")
+    .data(
+      colorScale.ticks().map((tick, i, nodes) => ({
+        offset: `${100 * (i / nodes.length)}%`,
+        color: colorScale(tick),
+      }))
+    )
+    .join("stop")
+    .attr("offset", (d) => d.offset)
+    .attr("stop-color", (d) => d.color);
+}
+
+/**
+ * Initializes the SVG rectangle for the legend.
+ */
+export function initLegendBar() {
+  const svg = d3.select(".heatmap-svg");
+  svg.append("rect").attr("class", "legend bar");
+}
+
+/**
+ *  Initializes the group for the legend's axis.
+ */
+export function initLegendAxis() {
+  const svg = d3.select(".heatmap-svg");
+  svg.append("g").attr("class", "legend axis");
+}
+
+/**
+ * Draws the legend to the left of the graphic.
+ *
+ * @param {number} x The x position of the legend
+ * @param {number} y The y position of the legend
+ * @param {number} height The height of the legend
+ * @param {number} width The width of the legend
+ * @param {string} fill The fill of the legend
+ * @param {*} colorScale The color scale represented by the legend
+ */
+export function draw(x, y, height, width, fill, colorScale) {
+  // TODO : Draw the legend
+  d3.select(".legend.bar")
+    .attr("x", x)
+    .attr("y", y)
+    .attr("height", height)
+    .attr("width", width)
+    .attr("fill", fill);
+
+  const step = 200;
+  const maxValue = colorScale.domain()[1];
+  const stepCount = Math.ceil(maxValue / step);
+  const steps = Array.from({ length: stepCount }, (_, i) => i * step);
+
+  const scale = d3.scaleLinear().domain(colorScale.domain()).range([0, height]);
+  const axis = d3.select(".legend.axis");
+
+  axis.attr("transform", "translate(-10, " + y + ")");
+
+  axis
+    .selectAll("text")
+    .data(steps)
+    .enter()
+    .append("text")
+    .text((d) => parseInt(d).toLocaleString())
+    .attr("text-anchor", "end")
+    .attr("dominant-baseline", "middle")
+    .attr("font-size", "0.5em")
+    .attr("x", x)
+    .attr("y", function (d) {
+      return scale(maxValue) - scale(d);
+    });
+}
+
+
+
 
 
 

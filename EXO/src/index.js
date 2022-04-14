@@ -56,7 +56,7 @@ import * as groupedQuantile from './scripts/grouped-quantile.js'
       //console.log(csvData)
       preprocess.addDayType(csvData)
       preprocess.aggregateData(csvData, vizData, startDate, endDate, typeJour, ferie)
-      console.log(vizData)
+      //console.log(vizData)
       heatmap.drawHeatmap(vizData, 9, 'Lafontaine Via Gare  Saint-Jérôme', 'moyMinutesEcart')
     })
   }
