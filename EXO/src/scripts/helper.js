@@ -49,7 +49,7 @@ export function setCanvasSize (width, height) {
  * @param {*} g The d3 Selection of the graph's g SVG element
  */
 export function appendGraphLabels (g) {
-  g.append('text')
+  /*g.append('text')
     .text('Achalandage et ponctualité des lignes de bus 9 et 22 de la couronne Nord de Montréal')
     .attr('class', 'title')
     .attr('fill', '#000000')
@@ -63,7 +63,7 @@ export function appendGraphLabels (g) {
     .attr('fill', '#000000')
     .attr('font-family', 'myriad-pro')
     .attr('font-size', 18)
-    .attr('transform', 'translate(50, 85)')
+    .attr('transform', 'translate(50, 85)')*/
 }
 
 /**
