@@ -40,11 +40,16 @@ import * as helper from './helper.js'
 // ===================== CONSTANTES  =====================
 
 const ID_VIZ = 'graph-heatmap';
-const MARGIN = { top: 250, right: 250, bottom: 300, left: 100 }
-const HEIGHT = 1200
+const MARGIN = { top: 150, right: 250, bottom: 300, left: 200 }
+const HEIGHT = 1000
 const ID_X_AXIS = 'x axis'
 const ID_Y_AXIS = 'y axis'
+const OPACITY = 0.75
 
+const VERT = "#00B800"
+const VERT_NEUTRE = "#E6F9E6"
+const ROUGE = "#FF0000"
+const BLANC = "#FFFFFF"
 
 let bounds
 let svgSize
@@ -98,6 +103,13 @@ let graphSize
   drawXAxis(Xscale)
   drawYAxis(Yscale)
   rotateXTicks()
+
+  setRectHandler(Xscale,Yscale) 
+  
+  initGradient(colorScale)
+  initLegendBar()
+  initLegendAxis()
+  draw(MARGIN.left /2, MARGIN.top + 5, graphSize.height - 10, 15, 'url(#gradient)', colorScale)
 /*
   for (var v = 0; v < vizData[posLigne].girouettes[posGirouette].voyages.length; v++) {
     for (var a = 0; a < vizData[posLigne].girouettes[posGirouette].voyages[v].arrets.length; a++) {
@@ -106,7 +118,6 @@ let graphSize
     }
   }
   */
- build()
 };
 
 // ===================== PROCESS DATA =====================
@@ -183,25 +194,6 @@ export function setSizing () {
   helper.setCanvasSize(svgSize.width, svgSize.height)
 }
 
-   /**
-     *   This function builds the graph.
-     */
-export function build () {
-  viz.updateXScale(xScale, data, graphSize.width, util.range)
-  viz.updateYScale(yScale, neighborhoodNames, graphSize.height)
-
-  viz.drawXAxis(xScale)
-  viz.drawYAxis(yScale, graphSize.width)
-
-  viz.rotateXTicks()
-
-  viz.updateRects(xScale, yScale, colorScale)
-
-  hover.setRectHandler(xScale, yScale, hover.rectSelected, hover.rectUnselected, hover.selectTicks, hover.unselectTicks)
-
-  legend.draw(margin.left / 2, margin.top + 5, graphSize.height - 10, 15, 'url(#gradient)', colorScale)
-}
-
 
 
 
@@ -266,8 +258,8 @@ export function appendAxes (g) {
   const dom = d3.extent(retard)
 
   var color = d3.scaleLinear()
-  .domain([dom[0], 0, dom[1]])
-  .range(["red", "white", "green"]);
+  .domain([dom[0], 0, 0.01, dom[1]])
+  .range([ROUGE, BLANC, VERT_NEUTRE, VERT]);
 
   return color
 }
@@ -316,6 +308,7 @@ export function appendAxes (g) {
     .attr("fill", function (d) {
       return colorScale(d.moyenne);
     })
+    .attr("opacity", OPACITY)
     .attr("class", "rectangleChaleur");
 }
 
@@ -326,8 +319,6 @@ export function appendAxes (g) {
 
 
 /**
- *  Draws the X axis at the top of the diagram.
- *
  *  @param {*} xScale The scale to use to draw the axis
  */
  export function drawXAxis(xScale) {
@@ -336,26 +327,25 @@ export function appendAxes (g) {
     .attr("transform", "translate(0, "+graphSize.height+" )")
     .call(d3.axisBottom(xScale))
     .selectAll("text")
+    .attr("opacity", 0.0)
     .style("font-size", "14px")
     .attr("id", (x) => {
-      return  x.replace(/\s+/g, "");
+      return  x.replace(/[^a-zA-Z0-9]/g,'');
     });
 }
 
 /**
- * Draws the Y axis to the right of the diagram.
- *
  * @param {*} yScale The scale to use to draw the axis
- * @param {number} width The width of the graphic
  */
  export function drawYAxis(yScale) {
   // TODO : Draw Y axis
   d3.select(".y.axis")
-    .call(d3.axisLeft(yScale))
+    .call(d3.axisLeft(yScale).tickSize(0))
     .selectAll("text")
+    .attr("opacity", 0.0)
     .style("font-size", "14px")
     .attr("id", (x) => {
-      return x;
+      return "v"+x;
     });
 }
 
@@ -378,32 +368,15 @@ export function appendAxes (g) {
 
 
 /**
- * Sets up an event handler for when the mouse enters and leaves the squares
- * in the heatmap. When the square is hovered, it enters the "selected" state.
- *
- * The tick labels for the year and neighborhood corresponding to the square appear
- * in bold.
  *
  * @param {*} xScale The xScale to be used when placing the text in the square
  * @param {*} yScale The yScale to be used when placing the text in the square
- * @param {Function} rectSelected The function to call to set the mode to "selected" on the square
- * @param {Function} rectUnselected The function to call to remove "selected" mode from the square
- * @param {Function} selectTicks The function to call to set the mode to "selected" on the ticks
- * @param {Function} unselectTicks The function to call to remove "selected" mode from the ticks
  */
- export function setRectHandler(
-  xScale,
-  yScale,
-  rectSelected,
-  rectUnselected,
-  selectTicks,
-  unselectTicks
-) {
-  // TODO : Select the squares and set their event handlers
+ export function setRectHandler(xScale,yScale) {
   d3.selectAll(" .rectangleChaleur")
     .on("mouseenter", function (d) {
-      rectSelected(this, xScale, yScale);
-      selectTicks(d.Arround_Nom, d.Plantation_Year);
+      rectSelected(this);
+      selectTicks(d.nomArret, d.voyage);
     })
     .on("mouseleave", function () {
       unselectTicks();
@@ -412,75 +385,44 @@ export function appendAxes (g) {
 }
 
 /**
- * The function to be called when one or many rectangles are in "selected" state,
- * meaning they are being hovered
- *
- * The text representing the number of trees associated to the rectangle
- * is displayed in the center of the rectangle and their opacity is lowered to 75%.
- *
  * @param {*} element The selection of rectangles in "selected" state
- * @param {*} xScale The xScale to be used when placing the text in the square
- * @param {*} yScale The yScale to be used when placing the text in the square
- */
-export function rectSelected(element, xScale, yScale) {
-  // TODO : Display the number of trees on the selected element
-  // Make sure the nimber is centered. If there are 1000 or more
-  // trees, display the text in white so it contrasts with the background.
-  const THRESHOLD_TREES = 1000;
-  d3.select(element).attr("opacity", 0.75);
-
-  d3.select(element.parentNode)
-    .append("text")
-    .attr("dx", function (d) {
-      return xScale(d.Plantation_Year) + xScale.bandwidth() / 2;
-    })
-    .attr("dy", function (d) {
-      return yScale(d.Arround_Nom) + (2 * yScale.bandwidth()) / 3;
-    })
-    .attr("text-anchor", "middle")
-    .attr("font-size", "0.8em")
-    .style("fill", function (d) {
-      if (d.Comptes >= THRESHOLD_TREES) return "white";
-      else return "black";
-    })
-    .text(function (d) {
-      return d.Comptes;
-    });
+*/
+export function rectSelected(element) {
+  d3.select(element).attr("opacity", 1.0);
 }
 
 /**
- * The function to be called when the rectangle or group
- * of rectangles is no longer in "selected state".
- *
- * The text indicating the number of trees is removed and
- * the opacity returns to 100%.
- *
  * @param {*} element The selection of rectangles in "selected" state
  */
 export function rectUnselected(element) {
-  // TODO : Unselect the element
-  d3.select(element).attr("opacity", 1.0);
-  d3.select(element.parentNode).select("text").remove();
+  d3.select(element).attr("opacity", OPACITY);
+  //d3.select(element.parentNode).select("text").remove();
 }
 
 /**
- * Makes the font weight of the ticks texts with the given name and year bold.
- *
- * @param {string} name The name of the neighborhood associated with the tick text to make bold
- * @param {number} year The year associated with the tick text to make bold
+ * @param {string} arret
+ * @param {number} voyage 
  */
-export function selectTicks(name, year) {
-  // TODO : Make the ticks bold
-  d3.select("#y" + year).attr("font-weight", "bold");
-  d3.select("#" + name.replace(/\s+/g, "")).attr("font-weight", "bold");
+export function selectTicks(arret, voyage) {
+  //console.log(arret);
+
+  //console.log(arret.replace(/[^a-zA-Z0-9]/g,''));
+  d3.select("#" + arret.replace(/[^a-zA-Z0-9]/g,''))
+  .attr("font-weight", "bold")
+  .attr('opacity', 1.0);
+  d3.select("#v" + voyage)
+  .attr("font-weight", "bold")
+  .attr('opacity', 1.0);;
 }
 
 /**
- * Returns the font weight of all ticks to normal.
  */
 export function unselectTicks() {
   // TODO : Unselect the ticks
-  d3.selectAll("text").attr("font-weight", "normal");
+  d3.select("#"+ID_VIZ)
+  .selectAll("text")
+  .attr("font-weight", "normal")
+  .attr('opacity', 0.0);;
 }
 
 
@@ -497,43 +439,44 @@ export function unselectTicks() {
  * @param {*} colorScale The color scale to use
  */
  export function initGradient(colorScale) {
-  const svg = d3.select(".heatmap-svg");
+  const svg = d3.select(".main-svg");
   const defs = svg.append("defs");
 
   const linearGradient = defs
     .append("linearGradient")
     .attr("id", "gradient")
-    .attr("x1", 0)
-    .attr("y1", 1)
-    .attr("x2", 0)
-    .attr("y2", 0);
+    .attr("x1", "0%")
+    .attr("y1", "100%")
+    .attr("x2", "0%")
+    .attr("y2", "0%");
+    //.attr("opacity", OPACITY);
+
+    let csd  =colorScale.domain()
+    let range_csd = csd[csd.length-1] - csd[0]
 
   linearGradient
     .selectAll("stop")
-    .data(
-      colorScale.ticks().map((tick, i, nodes) => ({
-        offset: `${100 * (i / nodes.length)}%`,
-        color: colorScale(tick),
-      }))
-    )
-    .join("stop")
-    .attr("offset", (d) => d.offset)
-    .attr("stop-color", (d) => d.color);
+    .data(csd)
+    .enter().append("stop")
+    .attr("offset", function(d) { return " "+((d-csd[0])/range_csd*100)+"%";})
+    .attr("stop-color", (d) => colorScale(d));
 }
 
 /**
  * Initializes the SVG rectangle for the legend.
  */
 export function initLegendBar() {
-  const svg = d3.select(".heatmap-svg");
-  svg.append("rect").attr("class", "legend bar");
+  const svg = d3.select(".main-svg");
+  svg.append("rect")
+  .attr("class", "legend bar")
+  .attr("opacity", OPACITY);
 }
 
 /**
  *  Initializes the group for the legend's axis.
  */
 export function initLegendAxis() {
-  const svg = d3.select(".heatmap-svg");
+  const svg = d3.select(".main-svg");
   svg.append("g").attr("class", "legend axis");
 }
 
@@ -548,7 +491,8 @@ export function initLegendAxis() {
  * @param {*} colorScale The color scale represented by the legend
  */
 export function draw(x, y, height, width, fill, colorScale) {
-  // TODO : Draw the legend
+ let csd = colorScale.domain()
+
   d3.select(".legend.bar")
     .attr("x", x)
     .attr("y", y)
@@ -556,12 +500,13 @@ export function draw(x, y, height, width, fill, colorScale) {
     .attr("width", width)
     .attr("fill", fill);
 
-  const step = 200;
-  const maxValue = colorScale.domain()[1];
-  const stepCount = Math.ceil(maxValue / step);
-  const steps = Array.from({ length: stepCount }, (_, i) => i * step);
+  const step = 5;
+  const maxValue = csd[csd.length - 1];
+  const minValue = csd[0];
+  const steps = d3.range(minValue, maxValue, step )
 
-  const scale = d3.scaleLinear().domain(colorScale.domain()).range([0, height]);
+  console.log(steps)
+  const scale = d3.scaleLinear().domain([csd[0], csd[csd.length-1]]).range([0, height]);
   const axis = d3.select(".legend.axis");
 
   axis.attr("transform", "translate(-10, " + y + ")");
@@ -574,7 +519,7 @@ export function draw(x, y, height, width, fill, colorScale) {
     .text((d) => parseInt(d).toLocaleString())
     .attr("text-anchor", "end")
     .attr("dominant-baseline", "middle")
-    .attr("font-size", "0.5em")
+    .attr("font-size", "0.7em")
     .attr("x", x)
     .attr("y", function (d) {
       return scale(maxValue) - scale(d);
@@ -582,6 +527,9 @@ export function draw(x, y, height, width, fill, colorScale) {
 }
 
 
+
+
+// ===================== TITLE =====================
 
 
 
