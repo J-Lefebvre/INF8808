@@ -130,12 +130,13 @@ export function getPath (projection) {
   return d3.geoPath()
     .projection(projection)
 }
+
 /**
  * @param {number} nSteps The ideal number of steps
  * @param {*} domain Domain of d3 scale
  * @returns {number} The best step to use
  */
- export function getClosestStep (nSteps, domain) {
+export function getClosestStep (nSteps, domain) {
   const BEST_STEPS = [
     0.1, 0.2, 0.25, 0.5,
     1, 2, 2.5, 5,
@@ -168,7 +169,11 @@ export function getSteps (nSteps, domain) {
   if (domain[0] <= 0 && domain[1] >= 0) {
     steps.push(0)
   } else {
-    steps.push(domain[0])
+    let firstStep = Math.floor(domain[0])
+    while (firstStep % step !== 0) {
+      firstStep += 1
+    }
+    steps.push(firstStep)
   }
   while (steps[steps.length - 1] < domain[1] - step) {
     steps.push(steps[steps.length - 1] + step)
@@ -177,4 +182,20 @@ export function getSteps (nSteps, domain) {
     steps.unshift(steps[0] - step)
   }
   return steps
+}
+
+/**
+ * @param {Array<number>} array Array of numeric values
+ * @returns {Array<number>} The quantiles
+ */
+export function getQuantiles (array) {
+  array = array.sort(d3.ascending)
+  const quantiles = [
+    array[0],
+    d3.quantile(array, 0.25),
+    d3.median(array),
+    d3.quantile(array, 0.75),
+    array[array.length - 1]
+  ]
+  return quantiles
 }

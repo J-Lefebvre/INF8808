@@ -15,9 +15,11 @@ header {
 }
 
 main {
-    height: 100%;
     margin: 10px 50px;
+    height: calc(100vh - 20px);
     font-family: 'myriad-pro', 'sans-serif';
+    display: flex;
+    flex-flow: column;
 }
 
 .main-svg text {
@@ -36,8 +38,6 @@ button {
     font-size: 16px;
 }
 
-
-
 button:hover, button:active {
 	background:linear-gradient(to bottom, #202020 5%, #000000 100%);
 	background-color:#f6f6f6;
@@ -55,7 +55,6 @@ button:hover, button:active {
     align-items: center;
 }
 
-
 #marker-g circle {
     cursor: pointer;
 }
@@ -63,12 +62,16 @@ button:hover, button:active {
 #grouped-quantile-graph-container {
     height: 100%;
     width: 100%;
-  }
-  a {
+    overflow: hidden;
+}
+
+a {
     display: flex;
     flex-grow: 0;
-  }
-  a.button {
+    margin-bottom: calc(2 * 0.67em); /*same as h1*/
+}
+
+a.button {
     -webkit-appearance: button;
     -moz-appearance: button;
     appearance: button;

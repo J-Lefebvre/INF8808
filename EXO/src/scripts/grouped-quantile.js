@@ -1,18 +1,19 @@
 import * as helper from './helper.js'
 
-const MARGIN = { top: 100, right: 80, bottom: 150, left: 150 }
+const MARGIN = { top: 52, right: 100, bottom: 150, left: 100 }
 const FONT_SIZE = 16
 const DIRECTIONS_ANGLE = -45
 const QUANTILE_STROKE_COLOR = 'black'
 const QUANTILE_FILL_COLOR = 'lightgray'
 const QUANTILE_STROKE_WIDTH = 2
 const NUMBER_OF_TICKS = 10
-const GRADIENT_COLORS = ['#ffe4e4', '#e4ffe4', '#ffffe4']
+const GRADIENT_COLORS = ['#ff9999', '#99ff99', '#ffff99']
+const GRADIENT_THRESHOLDS = ['10', '5', '0', '-5']
 
 /**
- *
+ * @param vizData
  */
-export function generateViz3 () {
+export function generateViz3 (vizData) {
   // Split container in two
   var container = d3.select('#grouped-quantile-graph-container')
   var delayGraphContainer = container.append('div')
@@ -30,24 +31,20 @@ export function generateViz3 () {
   data.directions = ['Lafontaine', 'Montmorency', 'Côté', 'George VI']
 
   // Regenerate graphs on resize
-  new ResizeObserver(() => { generateDelayGraph(delayGraphContainer, data) })
+  new ResizeObserver(() => { generateDelayGraph(delayGraphContainer, data, vizData) })
     .observe(delayGraphContainer.node())
-  new ResizeObserver(() => { generateTrafficGraph(trafficGraphContainer, data) })
+  new ResizeObserver(() => { generateTrafficGraph(trafficGraphContainer, data, vizData) })
     .observe(trafficGraphContainer.node())
 }
 
 /**
  * @param {Selection} container The div to generate the graph in
  * @param {object} data The data to fetch
+ * @param vizData
  */
-export function generateDelayGraph (container, data) {
-  // TODO: Fetch data
-  data.quantileSets = [
-    [10, 20, 30, 40, 50],
-    [-5, 25, 40, 50, 70],
-    [15, 20, 55, 60, 65],
-    [40, 50, 60, 70, 90]
-  ]
+export function generateDelayGraph (container, data, vizData) {
+  // Fetch data
+  data.quantileSets = getDelayQuantileSets(vizData)
 
   // Generate common graph
   data.title = 'Retard Moyen'
@@ -86,51 +83,94 @@ export function generateDelayGraph (container, data) {
   svg.insert('rect', '#x-axis')
     .attr('width', WIDTH - MARGIN.left - MARGIN.right)
     .attr('x', MARGIN.left)
-    .attr('height', dataScale(15) - MARGIN.top)
+    .attr('height', dataScale(GRADIENT_THRESHOLDS[0]) - MARGIN.top)
     .attr('y', MARGIN.top)
     .attr('fill', GRADIENT_COLORS[0])
   svg.insert('rect', '#x-axis')
     .attr('width', WIDTH - MARGIN.left - MARGIN.right)
     .attr('x', MARGIN.left)
-    .attr('height', dataScale(5) - dataScale(15))
-    .attr('y', dataScale(15))
+    .attr('height', dataScale(GRADIENT_THRESHOLDS[1]) - dataScale(GRADIENT_THRESHOLDS[0]))
+    .attr('y', dataScale(GRADIENT_THRESHOLDS[0]))
     .attr('fill', 'url(#late-grad)')
   svg.insert('rect', '#x-axis')
     .attr('width', WIDTH - MARGIN.left - MARGIN.right)
     .attr('x', MARGIN.left)
-    .attr('height', dataScale(-5) - dataScale(5))
-    .attr('y', dataScale(5))
+    .attr('height', dataScale(GRADIENT_THRESHOLDS[2]) - dataScale(GRADIENT_THRESHOLDS[1]))
+    .attr('y', dataScale(GRADIENT_THRESHOLDS[1]))
+    .attr('fill', GRADIENT_COLORS[1])
+  svg.insert('rect', '#x-axis')
+    .attr('width', WIDTH - MARGIN.left - MARGIN.right)
+    .attr('x', MARGIN.left)
+    .attr('height', dataScale(GRADIENT_THRESHOLDS[3]) - dataScale(GRADIENT_THRESHOLDS[2]))
+    .attr('y', dataScale(GRADIENT_THRESHOLDS[2]))
     .attr('fill', 'url(#early-grad)')
   svg.insert('rect', '#x-axis')
     .attr('width', WIDTH - MARGIN.left - MARGIN.right)
     .attr('x', MARGIN.left)
-    .attr('height', HEIGHT - MARGIN.bottom - dataScale(-5))
-    .attr('y', dataScale(-5))
+    .attr('height', HEIGHT - MARGIN.bottom - dataScale(GRADIENT_THRESHOLDS[3]))
+    .attr('y', dataScale(GRADIENT_THRESHOLDS[3]))
     .attr('fill', GRADIENT_COLORS[2])
+
   // Set y axis label
   svg.select('#y-axis > .label')
     .text('Minute')
+
+  // Legend
+  const legend = svg.insert('g', '#x-axis')
+  const middleY = (HEIGHT - MARGIN.top - MARGIN.bottom) / 2 + MARGIN.top
+  const squareWidth = FONT_SIZE * 2 / 3
+  const paddingX = FONT_SIZE * 2
+  const paddingY = FONT_SIZE * 1.5
+  legend.append('rect')
+    .attr('width', squareWidth)
+    .attr('x', WIDTH - MARGIN.right + FONT_SIZE)
+    .attr('height', squareWidth)
+    .attr('y', middleY - paddingY)
+    .attr('stroke', QUANTILE_STROKE_COLOR)
+    .attr('fill', GRADIENT_COLORS[0])
+  legend.append('text')
+    .attr('x', WIDTH - MARGIN.right + paddingX)
+    .attr('y', middleY - paddingY + squareWidth)
+    .text('Retard')
+  legend.append('rect')
+    .attr('width', squareWidth)
+    .attr('x', WIDTH - MARGIN.right + FONT_SIZE)
+    .attr('height', squareWidth)
+    .attr('y', middleY)
+    .attr('stroke', QUANTILE_STROKE_COLOR)
+    .attr('fill', GRADIENT_COLORS[1])
+  legend.append('text')
+    .attr('x', WIDTH - MARGIN.right + paddingX)
+    .attr('y', middleY + squareWidth)
+    .text('Ponctuel')
+  legend.append('rect')
+    .attr('width', squareWidth)
+    .attr('x', WIDTH - MARGIN.right + FONT_SIZE)
+    .attr('height', squareWidth)
+    .attr('y', middleY + paddingY)
+    .attr('stroke', QUANTILE_STROKE_COLOR)
+    .attr('fill', GRADIENT_COLORS[2])
+  legend.append('text')
+    .attr('x', WIDTH - MARGIN.right + paddingX)
+    .attr('y', middleY + paddingY + squareWidth)
+    .text('Avance')
 }
 
 /**
  * @param {Selection} container The div to generate the graph in
  * @param {object} data The data to fetch
+ * @param vizData
  */
-export function generateTrafficGraph (container, data) {
-  // TODO: Fetch data
-  data.quantileSets = [
-    [100, 200, 300, 350, 500],
-    [50, 200, 250, 600, 650],
-    [200, 350, 400, 600, 700],
-    [450, 500, 600, 700, 750]
-  ]
+export function generateTrafficGraph (container, data, vizData) {
+  // Fetch data
+  data.quantileSets = getTrafficQuantileSets(vizData, 'moyMinutesEcart')
 
   // Generate common graph
   data.title = 'Achalandage Moyen'
   var [svg] = generateGroupedQuantileGraph(container, data)
   // Set y axis label
   svg.select('#y-axis > .label')
-    .text('Nombre de personnes\npar jour')
+    .text('Nombre de personnes par trajet')
 }
 
 /**
@@ -182,7 +222,7 @@ export function generateGroupedQuantileGraph (container, data) {
   }
   var dataScale = d3.scaleLinear()
     .domain([minValue, maxValue])
-    .range([HEIGHT - MARGIN.bottom - FONT_SIZE, MARGIN.top])
+    .range([HEIGHT - MARGIN.bottom - FONT_SIZE / 2, MARGIN.top + FONT_SIZE / 2])
 
   // ===================== X AXIS =====================
 
@@ -247,7 +287,7 @@ export function generateGroupedQuantileGraph (container, data) {
     yAxis.append('text')
       .attr('text-anchor', 'end')
       .attr('x', MARGIN.left - FONT_SIZE)
-      .attr('y', y + FONT_SIZE / 2)
+      .attr('y', y + FONT_SIZE / 3)
       .text(step)
       .style('font-size', FONT_SIZE)
     // Draw ticks
@@ -272,6 +312,39 @@ export function generateGroupedQuantileGraph (container, data) {
 
   var bars = svg.append('g')
     .attr('id', 'candles')
+
+  // HISTOGRAMME
+
+  /* for (let i = 0; i < data.quantileSets.length; i++) {
+    // Features of the histogram
+    var histogram = d3.histogram()
+      .domain(dataScale.domain())
+      .thresholds(dataScale.ticks(50)) // Important: how many bins approx are going to be made? It is the 'resolution' of the violin plot
+      .value(d => d)
+    const bins = histogram(data.quantileSets[i])
+    // What is the biggest number of value in a bin? We need it cause this value will have a width of 100% of the bandwidth.
+    var maxNum = 0
+    for (const bin of bins) {
+      if (bin.length > maxNum) {
+        maxNum = bin.length
+      }
+    }
+    // The maximum width of a violin must be x.bandwidth = the width dedicated to a group
+    var xNum = d3.scaleLinear()
+      .range([0, BAR_WIDTH])
+      .domain([-maxNum, maxNum])
+    // Add the shape to this svg!
+    const areaGenerator = d3.area()
+      .x0((d) => xNum(-d.length))
+      .x1((d) => xNum(d.length))
+      .y((d) => dataScale(d.x0))
+      .curve(d3.curveStep)
+    bars.append('path')
+      .attr('transform', `translate(${directionsScale(data.directions[i]) - BAR_WIDTH / 2})`)
+      .style('fill', '#69b3a2')
+      .attr('d', areaGenerator(bins))
+  } */
+
   for (let i = 0; i < data.quantileSets.length; i++) {
     const x = directionsScale(data.directions[i])
     const top = dataScale(data.quantileSets[i][4])
@@ -306,21 +379,15 @@ export function generateGroupedQuantileGraph (container, data) {
       const quantile = bars.append('g')
         .attr('class', `direction${i} quantile`)
         .style('visibility', 'hidden')
+      const x = directionsScale(data.directions[i]) + (i % 2 === 0 ? -1 : 1) * (BAR_WIDTH / 2 + FONT_SIZE / 2)
+      const y = dataScale(data.quantileSets[i][j])
       quantile.append('text')
-        .attr('x', directionsScale(data.directions[i]) + (i % 2 === 0 ? -1 : 1) * (BAR_WIDTH / 2 + FONT_SIZE / 2))
-        .attr('y', dataScale(data.quantileSets[i][j]))
+        .attr('x', x)
+        .attr('y', y)
         .attr('text-anchor', (i % 2 === 0 ? 'end' : 'start'))
-        .text(data.quantileSets[i][j])
+        .text(Math.round(data.quantileSets[i][j]))
         .style('font-size', FONT_SIZE)
         .attr('id', `quantile-text-${i}-${j}`)
-      // Text background
-      const textBoundingClientRect = quantile.node().getBoundingClientRect()
-      quantile.insert('rect', `#quantile-text-${i}-${j}`)
-        .attr('width', textBoundingClientRect.width)
-        .attr('x', textBoundingClientRect.x)
-        .attr('height', textBoundingClientRect.height)
-        .attr('y', textBoundingClientRect.y)
-        .attr('fill', 'white')
     }
   }
 
@@ -364,4 +431,46 @@ export function generateGroupedQuantileGraph (container, data) {
     .style('font-size', FONT_SIZE)
 
   return [svg, dataScale]
+}
+
+/**
+ * @param {object} vizData Project data
+ * @returns {Array<number>} The quantile sets
+ */
+export function getDelayQuantileSets (vizData) {
+  const quantileSets = []
+  for (const line of vizData) {
+    for (const direction of line.girouettes) {
+      const delays = []
+      for (const trip of direction.voyages) {
+        for (const stop of trip.arrets) {
+          delays.push(stop.moyMinutesEcart)
+        }
+      }
+      quantileSets.push(helper.getQuantiles(delays))
+    }
+  }
+  return quantileSets
+}
+
+/**
+ * @param {object} vizData Project data
+ * @returns {Array<number>} The quantile sets
+ */
+export function getTrafficQuantileSets (vizData) {
+  const quantileSets = []
+  for (const line of vizData) {
+    for (const direction of line.girouettes) {
+      const tripNClients = []
+      for (const trip of direction.voyages) {
+        let nClients = 0
+        for (const stop of trip.arrets) {
+          nClients += stop.moyNClients
+        }
+        tripNClients.push(nClients)
+      }
+      quantileSets.push(helper.getQuantiles(tripNClients))
+    }
+  }
+  return quantileSets
 }
