@@ -10,44 +10,67 @@ const BAR_STROKE_WIDTH = 2
 /**
  *
  */
-export function generateViz2 (data) {
-    var container = d3.select('#candlestick-graph-container')
-		var topDiv = container.append('div')
+export function generateViz2 (data, line, direction, trajectNumber) {
+	var container = d3.select('#candlestick-graph-container')
+	var topDiv = container.append('div')
+		.style('width', '100%')
+		.style('height', '65%')
+		.style('min-width', '900px')
+	var candlestickContainer = topDiv.append('div')
+			.style('width', '80%')
+			.style('height', '100%')
+			.style('float', 'left')
+	var legendContainer = topDiv.append('div')
+			.style('width', '170px')
+			.style('height', '170px')
+			.style('float', 'right')
+	var bottomDiv = container.append('div')
 			.style('width', '100%')
-      .style('height', '55%')
-    var candlestickContainer = topDiv.append('div')
-        .style('width', '90%')
-        .style('height', '100%')
-				.style('float', 'left')
-		var legendContainer = topDiv.append('div')
-        .style('width', '10%')
-        .style('height', '100%')
-				.style('float', 'right')
-    var barGraphContainer = container.append('div')
-        .style('width', '90%')
-        .style('height', '45%')
+			.style('height', '35%')
+			.style('min-height', '400px')
+			.style('min-width', '900px')
+	var barGraphContainer = bottomDiv.append('div')
+			.style('width', '80%')
+			.style('height', '100%')
 
-    // TODO: Fetch data
-    var stops = []
-    var amounts = []
-		var delay = []
-    let stopsList = data[0].girouettes[0].voyages[0].arrets
-    for(let stop in stopsList) {
-        stops.push(stopsList[stop]["nomArret"])
-        amounts.push(Math.floor(Math.random() * 70))
-				delay.push(Math.floor(Math.random() * (50 - (-10)) -10))
-    }
-	data = {}
-	data.stops = stops
-	data.amounts = amounts
-	data.delay = delay
-
+	// Fetch data
+	var dataArray = getData(data, line, direction, trajectNumber);
+	data.stops = dataArray[0]
+	data.delay = dataArray[1]
+	data.amounts = dataArray[2]
+	
   // Regenerate graphs on resize
-	new ResizeObserver(() => { generateTopGraph(candlestickContainer, data); setLegend(legendContainer); })
+	if(candlestickContainer.node()) {
+		new ResizeObserver(() => { generateTopGraph(candlestickContainer, data); setLegend(legendContainer); })
 		.observe(candlestickContainer.node())
-	new ResizeObserver(() => { generateBottomGraph(barGraphContainer, data) })
+		new ResizeObserver(() => { generateBottomGraph(barGraphContainer, data) })
 		.observe(barGraphContainer.node())
+	}
+	
+}
 
+/**
+ * @param ligne 
+ * @param direction
+ */
+export function getData (vizData, line, direction, trajectNumber) {
+	var posLigne = vizData.findIndex(e => e.ligne === line)
+  var posGirouette = vizData[posLigne].girouettes.findIndex(e => e.girouette === direction)
+	var posVoyage = vizData[posLigne].girouettes[posGirouette].voyages.findIndex(e => e.voyage === trajectNumber)
+	var delayIndicater = "moyMinutesEcart";
+	var ammountIndicater = "moyNClients";
+	var delays = [];
+	var amounts = [];
+	var stops = [];
+
+	for (var a = 0; a < vizData[posLigne].girouettes[posGirouette].voyages[posVoyage].arrets.length; a++) {
+		stops.push(vizData[posLigne].girouettes[posGirouette].voyages[posVoyage].arrets[a]["nomArret"])
+		var dataDelay = vizData[posLigne].girouettes[posGirouette].voyages[posVoyage].arrets[a][delayIndicater]
+		delays.push(dataDelay)
+		var dataAmmount = vizData[posLigne].girouettes[posGirouette].voyages[posVoyage].arrets[a][ammountIndicater]
+		amounts.push(dataAmmount)
+	}
+	return [stops, delays, amounts]
 }
 
 /**
@@ -56,7 +79,7 @@ export function generateViz2 (data) {
  export function setLegend (container) {
 	container.html('')
 	var legendWidth = container.node().getBoundingClientRect().width
-  var legendHeight = container.node().getBoundingClientRect().height * 0.35
+  var legendHeight = container.node().getBoundingClientRect().height
 	var svgLegend = container.append('svg')
 		.attr('width', legendWidth)
 		.attr('height', legendHeight)
@@ -149,7 +172,7 @@ export function generateBottomGraph (container, data) {
 
 	// Add Y axis
 	var yScale = d3.scaleLinear()
-		.domain([-10, 50])
+		.domain([Math.min(...data.delay), Math.max(...data.delay)])
 		.range([height - margin.bottom, margin.top]);
 	svg.append("g")
 		.attr("transform", "translate(" + margin.left + ", 0 )")
@@ -191,7 +214,8 @@ export function generateBottomGraph (container, data) {
 
 	//Add right labels
 	svg.append("text")
-		.attr("transform", "translate(" + (width - margin.left + 10) + "," + (yScale(25)) + ")")
+		.attr('x', width - margin.left + 10)
+		.attr('y', (yScale(0.5*(Math.max(...data.delay)-5) + 5)))
 		.text('Retard')
 		.attr('fill', '#D7625D')
 		.attr('font-size', 16)
@@ -204,7 +228,8 @@ export function generateBottomGraph (container, data) {
 			.attr('font-size', 16)
 
 	svg.append("text")
-		.attr("transform", "translate(" + (width - margin.left + 10) + "," + (yScale(-5)) + ")")
+		.attr('x', width - margin.left + 10)
+		.attr('y', (yScale(0.5*(Math.min(...data.delay)))))
 		.text('Avance')
 		.attr('fill', '#FFD966')
 		.attr('font-size', 16)
@@ -231,12 +256,14 @@ export function generateBottomGraph (container, data) {
 			height = -(yScale(previousDelay) - yScale(data.delay[i]))
 			fillColor = BAR_FILL_COLOR_POSITIVE
 			strockeColor = BAR_STROKE_COLOR_POSITIVE
+		} else if ((data.delay[i] == previousDelay)) {
+			height = 0.1;
 		}
 		lines.append("line")
 		.attr("x1", x + (xScale.bandwidth()/2)) 
-		.attr("x2", x + (xScale.bandwidth()/2))  //<<== and here
-		.attr("y1", yScale(-10))
-		.attr("y2",	yScale(50))
+		.attr("x2", x + (xScale.bandwidth()/2))
+		.attr("y1", yScale(Math.min(...data.delay)))
+		.attr("y2",	yScale(Math.max(...data.delay)))
 		.attr('class', `stop${i} line`)
 		.style("stroke-width", 2)
 		.style("stroke", "black")
@@ -308,7 +335,6 @@ export function generateBarGraph (container, data) {
   var height = container.node().getBoundingClientRect().height
   // Create svg
 	var margin = {top: 50, right: 100, bottom: 200, left: 100}
-	var BAR_WIDTH = (width - margin.left - margin.right) / data.stops.length
   var svg = container.append('svg')
 		.attr("width", width)
 		.attr("height", height)
@@ -336,7 +362,7 @@ export function generateBarGraph (container, data) {
 
 	// Add Y axis
 	var yScale = d3.scaleLinear()
-		.domain([0, 70])
+		.domain([0, Math.max(...data.amounts)])
 		.range([height - margin.bottom, margin.top]);
 	svg.append("g")
 		.attr("transform", "translate(" + margin.left + ", 0 )")
@@ -374,7 +400,7 @@ export function generateBarGraph (container, data) {
 			.attr("x1", x + (xScale.bandwidth()/2)) 
 			.attr("x2", x + (xScale.bandwidth()/2)) 
 			.attr("y1", yScale(0))
-			.attr("y2",	yScale(70))
+			.attr("y2",	yScale(Math.max(...data.amounts)))
 			.attr('class', `stop${i} line`)
 			.style("stroke-width", 2)
 			.style("stroke", "black")

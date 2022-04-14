@@ -3,6 +3,7 @@
 import * as helper from './scripts/helper.js'
 import * as heatmap from './scripts/heatmap.js'
 import * as preprocess from './scripts/preprocess.js'
+import * as candlestick from './scripts/candlestick'
 
 /**
  * @file 
@@ -55,6 +56,7 @@ import * as preprocess from './scripts/preprocess.js'
       preprocess.addDayType(csvData)
       preprocess.aggregateData(csvData, vizData, startDate, endDate, typeJour, ferie)
       heatmap.drawHeatmap(vizData, 9, 'Lafontaine Via Gare  Saint-Jérôme', 'moyMinutesEcart')
+      candlestick.generateViz2(vizData, 9, 'Lafontaine Via Gare  Saint-Jérôme', 15);
 
     })
   }
