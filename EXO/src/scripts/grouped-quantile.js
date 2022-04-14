@@ -13,7 +13,7 @@ const GRADIENT_THRESHOLDS = ['15', '10', '0', '-5']
 /**
  *
  */
-export function generateViz3 () {
+export function generateViz3 (vizData) {
   // Split container in two
   var container = d3.select('#grouped-quantile-graph-container')
   var delayGraphContainer = container.append('div')
@@ -31,9 +31,9 @@ export function generateViz3 () {
   data.directions = ['Lafontaine', 'Montmorency', 'Côté', 'George VI']
 
   // Regenerate graphs on resize
-  new ResizeObserver(() => { generateDelayGraph(delayGraphContainer, data) })
+  new ResizeObserver(() => { generateDelayGraph(delayGraphContainer, data, vizData) })
     .observe(delayGraphContainer.node())
-  new ResizeObserver(() => { generateTrafficGraph(trafficGraphContainer, data) })
+  new ResizeObserver(() => { generateTrafficGraph(trafficGraphContainer, data, vizData) })
     .observe(trafficGraphContainer.node())
 }
 
@@ -41,14 +41,10 @@ export function generateViz3 () {
  * @param {Selection} container The div to generate the graph in
  * @param {object} data The data to fetch
  */
-export function generateDelayGraph (container, data) {
-  // TODO: Fetch data
-  data.quantileSets = [
-    [10, 20, 30, 40, 50],
-    [-5, 25, 40, 50, 70],
-    [15, 20, 55, 60, 65],
-    [40, 50, 60, 70, 90]
-  ]
+export function generateDelayGraph (container, data, vizData) {
+  // Fetch data
+  data.quantileSets = getQuantileSets(vizData, 'moyMinutesEcart')
+  console.log(data.quantileSets)
 
   // Generate common graph
   data.title = 'Retard Moyen'
@@ -114,6 +110,7 @@ export function generateDelayGraph (container, data) {
     .attr('height', HEIGHT - MARGIN.bottom - dataScale(GRADIENT_THRESHOLDS[3]))
     .attr('y', dataScale(GRADIENT_THRESHOLDS[3]))
     .attr('fill', GRADIENT_COLORS[2])
+
   // Set y axis label
   svg.select('#y-axis > .label')
     .text('Minute')
@@ -163,14 +160,10 @@ export function generateDelayGraph (container, data) {
  * @param {Selection} container The div to generate the graph in
  * @param {object} data The data to fetch
  */
-export function generateTrafficGraph (container, data) {
-  // TODO: Fetch data
-  data.quantileSets = [
-    [100, 200, 300, 350, 500],
-    [50, 200, 250, 600, 650],
-    [200, 350, 400, 600, 700],
-    [450, 500, 600, 700, 750]
-  ]
+export function generateTrafficGraph (container, data, vizData) {
+  // Fetch data
+  console.log(vizData)
+  data.quantileSets = data.quantileSets = getQuantileSets(vizData, 'moyMinutesEcart')
 
   // Generate common graph
   data.title = 'Achalandage Moyen'
@@ -405,4 +398,25 @@ export function generateGroupedQuantileGraph (container, data) {
     .style('font-size', FONT_SIZE)
 
   return [svg, dataScale]
+}
+
+/**
+ * @param {object} vizData Project data
+ * @param {string} attribute The stop's attribute to fetch
+ * @returns {Array<number>} The quantile sets
+ */
+export function getQuantileSets (vizData, attribute) {
+  const quantileSets = []
+  for (const line of vizData) {
+    for (const direction of line.girouettes) {
+      const tripDelays = []
+      for (const trip of direction.voyages) {
+        for (const stop of trip.arrets) {
+          tripDelays.push(stop[attribute])
+        }
+      }
+      quantileSets.push(helper.getQuantiles(tripDelays))
+    }
+  }
+  return quantileSets
 }

@@ -34,7 +34,6 @@ import * as groupedQuantile from './scripts/grouped-quantile.js'
   var vizData = []
 
   build()
-  groupedQuantile.generateViz3();
 
   /**
    *   Cette fonction construit la page web
@@ -58,6 +57,8 @@ import * as groupedQuantile from './scripts/grouped-quantile.js'
       preprocess.aggregateData(csvData, vizData, startDate, endDate, typeJour, ferie)
       console.log(vizData)
       heatmap.drawHeatmap(vizData, 9, 'Lafontaine Via Gare  Saint-Jérôme', 'moyMinutesEcart')
+
+      groupedQuantile.generateViz3(vizData);
     })
   }
 })(d3)
