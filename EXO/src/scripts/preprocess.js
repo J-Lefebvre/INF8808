@@ -15,7 +15,7 @@
  *
  * @param {object[]} data L'array d'objets qui contient les lignes du csv
  */
-export function addDayType (data) {
+ export function addDayType (data) {
   for (var i = 0; i < data.length; i++) {
     // jour_semaine
     data[i].jour_semaine = data[i].date.getDay()
@@ -73,6 +73,7 @@ export function aggregateData (csvData, vizData, startDate, endDate, typeJour, f
           {
             codeArret: csvData[i].arret_code,
             nomArret: csvData[i].arret_nom,
+            sequenceArret : csvData[i].sequence_arret,
             minutesEcart: [],
             moyMinutesEcart: null,
             nClients: [],

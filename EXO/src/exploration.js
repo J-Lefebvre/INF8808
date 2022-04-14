@@ -1,8 +1,8 @@
 'use strict'
 
 import * as helper from './scripts/helper.js'
+import * as heatmap from './scripts/heatmap.js'
 import * as preprocess from './scripts/preprocess.js'
-import * as groupedQuantile from './scripts/grouped-quantile.js'
 
 /**
  * @file 
@@ -54,8 +54,8 @@ import * as groupedQuantile from './scripts/grouped-quantile.js'
       //console.log(csvData)
       preprocess.addDayType(csvData)
       preprocess.aggregateData(csvData, vizData, startDate, endDate, typeJour, ferie)
-      
-      groupedQuantile.generateViz3(vizData);
+      heatmap.drawHeatmap(vizData, 9, 'Lafontaine Via Gare  Saint-Jérôme', 'moyMinutesEcart')
+
     })
   }
 })(d3)
