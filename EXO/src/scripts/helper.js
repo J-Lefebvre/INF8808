@@ -169,7 +169,11 @@ export function getSteps (nSteps, domain) {
   if (domain[0] <= 0 && domain[1] >= 0) {
     steps.push(0)
   } else {
-    steps.push(domain[0])
+    let firstStep = Math.floor(domain[0])
+    while (firstStep % step !== 0) {
+      firstStep += 1
+    }
+    steps.push(firstStep)
   }
   while (steps[steps.length - 1] < domain[1] - step) {
     steps.push(steps[steps.length - 1] + step)
