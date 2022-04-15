@@ -1,6 +1,6 @@
 import * as helper from './helper.js'
 
-const MARGIN = { top: 52, right: 100, bottom: 150, left: 100 }
+const MARGIN = { top: 52, right: 100, bottom: 125, left: 100 }
 const FONT_SIZE = 16
 const DIRECTIONS_ANGLE = -45
 const QUANTILE_STROKE_COLOR = 'black'
@@ -407,7 +407,7 @@ export function generateGroupedQuantileGraph (container, data) {
         d3.selectAll(`.direction${i}`)
           .attr('stroke-width', QUANTILE_STROKE_WIDTH * 2)
         d3.selectAll(`.direction${i}.label`)
-          .style('font-size', FONT_SIZE * 1.5)
+          .style('font-size', FONT_SIZE * 1.2)
         d3.selectAll(`.direction${i}.quantile`)
           .style('visibility', 'visible')
       // Unhighlight direction
