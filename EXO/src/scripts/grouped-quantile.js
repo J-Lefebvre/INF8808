@@ -49,8 +49,8 @@ export function generateDelayGraph (container, data, vizData) {
   // Generate common graph
   data.title = 'Retard Moyen'
   var [svg, dataScale] = generateGroupedQuantileGraph(container, data)
-  var WIDTH = container.node().getBoundingClientRect().width
   var HEIGHT = container.node().getBoundingClientRect().height
+  var WIDTH = Math.min(HEIGHT, container.node().getBoundingClientRect().width)
 
   // Set gradients
   svg.append('defs')
@@ -184,13 +184,14 @@ export function generateGroupedQuantileGraph (container, data) {
   // Delete existing content
   container.html('')
   // Set size
-  var WIDTH = container.node().getBoundingClientRect().width
   var HEIGHT = container.node().getBoundingClientRect().height
+  var WIDTH = Math.min(HEIGHT, container.node().getBoundingClientRect().width)
   var BAR_WIDTH = (WIDTH - MARGIN.left - MARGIN.right) / 7
   // Create svg
   var svg = container.append('svg')
     .attr('width', WIDTH)
     .attr('height', HEIGHT)
+    .attr('style', 'display: block; margin: auto')
 
   // ===================== SCALES =====================
 
