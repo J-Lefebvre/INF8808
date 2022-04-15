@@ -84,11 +84,16 @@ button:hover, button:active {
     display: flex;
     padding: 10px;
 }
+p.col {
+    margin-bottom: 0;
+    text-align: right;
+}
 
-a {
+a,h2 {
     display: flex;
     flex-grow: 0;
     margin-bottom: calc(2 * 0.67em); /*same as h1*/
+    margin-left:0;
 }
 
 a.button {

@@ -38,7 +38,7 @@ import * as helper from './helper.js'
 
 
 // ===================== CONSTANTES  =====================
-
+const FONT_SIZE = 16
 const ID_VIZ = 'graph-heatmap';
 const MARGIN = { top: 150, right: 250, bottom: 300, left: 200 }
 const HEIGHT = 1000
@@ -441,6 +441,14 @@ export function unselectTicks() {
  */
  export function initGradient(colorScale) {
   const svg = d3.select(".main-svg");
+  
+  svg.append('text')
+    .attr('x', (svgSize.width - MARGIN.right - MARGIN.left) / 2 + MARGIN.left)
+    .attr('y', MARGIN.top - FONT_SIZE * 2)
+    .attr('text-anchor', 'middle')
+    .text("Heatmap")
+    .style('font-size', FONT_SIZE)
+
   const defs = svg.append("defs");
 
   const linearGradient = defs

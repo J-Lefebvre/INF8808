@@ -4,6 +4,7 @@ import * as helper from './scripts/helper.js'
 import * as heatmap from './scripts/heatmap.js'
 import * as preprocess from './scripts/preprocess.js'
 import * as candlestick from './scripts/candlestick'
+import bootstrap from 'bootstrap'
 
 /**
  * @file 
