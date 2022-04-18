@@ -139,7 +139,7 @@ export function getData (vizData, line, direction, trajectNumber) {
  */
 export function generateBottomGraph (container, data) {
   // Generate common graph
-  data.title = 'Achalandage Moyen'
+  data.title = 'Nombre de montants moyen'
   var [svg] = generateBarGraph(container, data)
 }
 
@@ -379,7 +379,7 @@ export function generateBarGraph (container, data) {
 	.attr('font-size', 12)
 	.append('tspan')
 	.attr('x', 0)
-	.attr('dy', 10)
+	.attr('dy', 11)
 	.text('de')
 	.append('tspan')
 	.attr('x', 0)

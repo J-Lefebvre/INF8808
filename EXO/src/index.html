@@ -6,6 +6,9 @@
         <meta name="Description" content="Code pour le projet de visualisation Exo x Polytechnique Montréal">
         <title>Achalandage et ponctualité des lignes de bus 9 et 22 de la couronne Nord de Montréal</title>
         <link rel="stylesheet" href="https://use.typekit.net/gmf8aij.css">
+        
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/css/bootstrap.min.css"
+        integrity="sha384-zCbKRCUGaJDkqS1kPbPd7TveP5iyJE0EjAuZQTgFLD2ylzuqKfdKlfG/eSrtxUkn" crossorigin="anonymous" />
         <link rel="stylesheet" href="assets/typography.css">
         <link rel="stylesheet" href="assets/style.css">
 
@@ -13,22 +16,61 @@
 
       <body style="background-color: #fafafa;">
         <main>
-          <h1>Achalandage et ponctualité des lignes de bus 9 et 22 | Couronne Nord de Montréal</h1>
-          <p>Dans le projet proposé par Exo Québec, nous avons exploré les lignes de bus 9 et 22 de la couronne nord de montréal.
+          <h2>Achalandage et ponctualité des lignes de bus 9 et 22 | Couronne Nord de Montréal</h2>
+          <p style="font-family:sans-serif">Dans le projet proposé par Exo Québec, nous avons exploré les lignes de bus 9 et 22 de la couronne nord de montréal.
             <br>Nous avions à notre disposition les données d'achalandage et de ponctualité des différents voyages sur 3 mois de l'année 2021.
-            <br>Cliquez sur "Exploration" pour accéder aux visualisations.
+            <br>Cliquez sur "<b>Exploration</b>" pour accéder aux visualisations.
           </p>
           <a href="exploration.html" class="button">
-            <button style="align-items:center;display: flex;font-family: 'myriad-pro'">
+            <button class="navigation" style="align-items:center;display: flex;font-family: 'myriad-pro'">
               <svg style="margin-right:.5cm" xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-arrow-right-circle" viewBox="0 0 16 16">
                 <path fill-rule="evenodd" d="M1 8a7 7 0 1 0 14 0A7 7 0 0 0 1 8zm15 0A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM4.5 7.5a.5.5 0 0 0 0 1h5.793l-2.147 2.146a.5.5 0 0 0 .708.708l3-3a.5.5 0 0 0 0-.708l-3-3a.5.5 0 1 0-.708.708L10.293 7.5H4.5z"/>
               </svg>
               Exploration
             </button>
           </a>
+          
+          <svg class="help" xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="#484848" class="bi bi-info-circle" style="margin-left: auto; 
+          margin-right: 3;" data-toggle="modal" data-target="#exampleModal" viewBox="0 0 16 16">
+            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+            <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/>
+          </svg>
+          <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-xl">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title" id="exampleModalLabel">Quantiles des retards et achalandage | Overview</h5>
+                  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true" style="color:rgb(255, 255, 255);">&times;</span>
+                  </button>
+                </div>
+                <div class="modal-body" style="font-family:sans-serif">
+                  La visualisation permet de se rendre compte de la répartition des valeurs récupérées lors des voyages.
+                  <br>Le graphe de gauche représente les valeurs du <b>retard moyen</b> pour chaque ligne et chaque direction de notre base de donnée, et le graphe de droite représente les données d'<b>achalandage</b>.
+                  <br>
+                  <br>En passant la souris au dessus des quantiles, on peut lire les valeurs réelles, de haut en bas : 
+                  <ul>
+                    <li><b>Valeur maximale</b></li>
+                    <li><b>3e quartile</b> (donnée de la série qui sépare les 75 % inférieurs des données)</li>
+                    <li><b>Médiane</b></li>
+                    <li><b>1ier quartile</b> (donnée de la série qui sépare les 25 % inférieurs des données)</li>
+                    <li><b>Valeur minimale</b></li>
+                  </ul>
+                  La valeur du retard correspond, en minutes, à la formule : <i>Horaire de passage effectif du bus - Horaire prévu du bus</i> <img style="max-width : 100%;
+                  height : auto;" src="/assets/image/quantile.png" alt="Quantiles des retards et achalandage">
+                </div>
+              </div>
+            </div>
+          </div>
           <div id="grouped-quantile-graph-container"></div>
         </main>
         <script src="https://d3js.org/d3.v5.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"
+        integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-fQybjgWLrvvRgtW6bFlB7jaZrFsaBXjsOMm/tB9LTS58ONXgqbR9W8oWht/amnpF"
+        crossorigin="anonymous"></script>
         <script type="module" src="index.js"></script>
       </body>
 </html>

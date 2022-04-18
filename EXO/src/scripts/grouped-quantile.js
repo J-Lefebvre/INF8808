@@ -114,6 +114,7 @@ export function generateDelayGraph (container, data, vizData) {
   // Set y axis label
   svg.select('#y-axis > .label')
     .text('Minute')
+    .attr('fill', '#898989')
 
   // Legend
   const legend = svg.insert('g', '#x-axis')
@@ -170,7 +171,24 @@ export function generateTrafficGraph (container, data, vizData) {
   var [svg] = generateGroupedQuantileGraph(container, data)
   // Set y axis label
   svg.select('#y-axis > .label')
-    .text('Nombre de personnes par trajet')
+    .text("")
+  svg.select('#y-axis > .label')
+    .append('tspan')
+    .attr("x","96")
+    .attr("y","20")
+    .text("Nombre")
+  svg.select('#y-axis > .label')
+    .append('tspan')
+    .attr("dx","-58")
+    .attr("dy","14")
+    .text("de personnes")
+    svg.select('#y-axis > .label')
+    .append('tspan')
+    .attr("dx","-96")
+    .attr("dy","14")
+    .text("par trajet")
+    /*.text('Nombre de personnes par trajet')
+    .attr('fill', '#898989')*/
 }
 
 /**
@@ -244,6 +262,7 @@ export function generateGroupedQuantileGraph (container, data) {
       .attr('y', lineValuesY)
       .attr('text-anchor', 'middle')
       .text(line)
+    .attr('fill', '#898989')
       .style('font-size', FONT_SIZE)
   }
   // Draw direction values
@@ -255,6 +274,7 @@ export function generateGroupedQuantileGraph (container, data) {
       .attr('transform', `translate(${x}, ${directionValuesY}) rotate(${DIRECTIONS_ANGLE})`)
       .text(data.directions[i])
       .style('font-size', FONT_SIZE)
+      .attr('font-family', 'sans-serif')
       .attr('class', `direction${i} label`)
   }
   // Draw labels
@@ -262,11 +282,13 @@ export function generateGroupedQuantileGraph (container, data) {
     .attr('x', WIDTH - MARGIN.right + FONT_SIZE / 2)
     .attr('y', lineValuesY)
     .text('Ligne')
+    .attr('fill', '#898989')
     .style('font-size', FONT_SIZE)
   xAxis.append('text')
     .attr('x', WIDTH - MARGIN.right + FONT_SIZE / 2)
     .attr('y', directionValuesY + FONT_SIZE)
     .text('Direction')
+    .attr('fill', '#898989')
     .style('font-size', FONT_SIZE)
 
   // ===================== Y AXIS =====================
@@ -290,6 +312,7 @@ export function generateGroupedQuantileGraph (container, data) {
       .attr('x', MARGIN.left - FONT_SIZE)
       .attr('y', y + FONT_SIZE / 3)
       .text(step)
+      .attr('font-family', 'sans-serif')
       .style('font-size', FONT_SIZE)
     // Draw ticks
     yAxis.append('path')
@@ -307,6 +330,7 @@ export function generateGroupedQuantileGraph (container, data) {
     .attr('class', 'label')
     .attr('text-anchor', 'end')
     .text('Unité de données')
+    .attr('fill', '#898989')
     .style('font-size', FONT_SIZE)
 
   // ===================== CANDLES =====================
