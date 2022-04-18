@@ -1,7 +1,7 @@
 import * as helper from './helper.js'
 
 const MARGIN = { top: 52, right: 100, bottom: 125, left: 100 }
-const FONT_SIZE = 16
+const FONT_SIZE = 14
 const DIRECTIONS_ANGLE = -45
 const QUANTILE_STROKE_COLOR = 'black'
 const QUANTILE_FILL_COLOR = 'lightgray'
@@ -174,17 +174,17 @@ export function generateTrafficGraph (container, data, vizData) {
     .text("")
   svg.select('#y-axis > .label')
     .append('tspan')
-    .attr("x","96")
-    .attr("y","20")
+    .attr("x","88")
+    .attr("y","21")
     .text("Nombre")
   svg.select('#y-axis > .label')
     .append('tspan')
-    .attr("dx","-58")
-    .attr("dy","14")
+    .attr("dx","-51")
+    .attr("dy","15")
     .text("de personnes")
     svg.select('#y-axis > .label')
     .append('tspan')
-    .attr("dx","-96")
+    .attr("dx","-84")
     .attr("dy","14")
     .text("par trajet")
     /*.text('Nombre de personnes par trajet')
