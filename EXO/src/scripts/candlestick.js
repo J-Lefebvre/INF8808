@@ -1,4 +1,4 @@
-const FONT_SIZE = 16
+const FONT_SIZE = 14
 const BAR_FILL_COLOR = '#D5E8D4'
 const BAR_STROKE_COLOR = '#8DBA74'
 const BAR_FILL_COLOR_POSITIVE = '#D5E8D4'
@@ -92,7 +92,7 @@ export function getData (vizData, line, direction, trajectNumber) {
 		.attr('text-anchor', 'middle')
 		.text("Légende")
 		.attr('fill', '#black')
-		.attr('font-size', "1em")
+		.attr('font-size', "14px")
 
 	svgLegend.append('svg')
 		.append('rect')
@@ -106,7 +106,7 @@ export function getData (vizData, line, direction, trajectNumber) {
 		.attr('transform', 'translate(' + 40 + ', 65)')
 		.text("Gain du retard")
 		.attr('fill', '#black')
-		.attr('font-size', "1em")
+		.attr('font-size', "14px")
 
 	svgLegend.append('svg')
 		.append('rect')
@@ -120,7 +120,7 @@ export function getData (vizData, line, direction, trajectNumber) {
 		.attr('transform', 'translate(' + 40 + ', 100)')
 		.text("Perte du retard")
 		.attr('fill', '#black')
-		.attr('font-size', "1em")
+		.attr('font-size', "14px")
 }
 
 /**
@@ -218,21 +218,21 @@ export function generateBottomGraph (container, data) {
 		.attr('y', (yScale(0.5*(Math.max(...data.delay)-5) + 5)))
 		.text('Retard')
 		.attr('fill', '#D7625D')
-		.attr('font-size', 16)
+		.attr('font-size', FONT_SIZE)
 
 	svg.append("text")
 			.text('Ponctuel')
 			.attr('x', width - margin.left + 10)
       .attr('y', (yScale(2.5)))
       .attr('fill', '#577845')
-			.attr('font-size', 16)
+			.attr('font-size', FONT_SIZE)
 
 	svg.append("text")
 		.attr('x', width - margin.left + 10)
 		.attr('y', (yScale(0.5*(Math.min(...data.delay)))))
 		.text('Avance')
 		.attr('fill', '#FFD966')
-		.attr('font-size', 16)
+		.attr('font-size', FONT_SIZE)
 
 	// Bars
 	var lines = svg.append('g')
@@ -305,7 +305,7 @@ export function generateBottomGraph (container, data) {
 			.attr('y', y - 10)
 			.attr('fill', 'black')
 			.attr('class', `stop${i} textValue`)
-			.attr('font-size', 16)
+			.attr('font-size', 14)
 			.style('visibility', 'hidden')
 		previousDelay = data.delay[i]
   }
@@ -442,7 +442,7 @@ export function generateBarGraph (container, data) {
 			.attr('y', y -10)
 			.attr('fill', 'black')
 			.attr('class', `stop${i} textValue`)
-			.attr('font-size', 16)
+			.attr('font-size', 14)
 			.style('visibility', 'hidden')
   }
 

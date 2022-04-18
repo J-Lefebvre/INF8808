@@ -117,7 +117,7 @@ export function generateDelayGraph (container, data, vizData) {
     .attr('fill', '#898989')
 
   // Legend
-  const legend = svg.insert('g', '#x-axis')
+  const legend = svg.insert('g', '#x-axis').style("font-size","12px")
   const middleY = (HEIGHT - MARGIN.top - MARGIN.bottom) / 2 + MARGIN.top
   const squareWidth = FONT_SIZE * 2 / 3
   const paddingX = FONT_SIZE * 2
@@ -273,7 +273,7 @@ export function generateGroupedQuantileGraph (container, data) {
       .attr('text-anchor', 'end')
       .attr('transform', `translate(${x}, ${directionValuesY}) rotate(${DIRECTIONS_ANGLE})`)
       .text(data.directions[i])
-      .style('font-size', FONT_SIZE)
+      .style('font-size', "12px")
       .attr('font-family', 'sans-serif')
       .attr('class', `direction${i} label`)
   }
@@ -431,7 +431,7 @@ export function generateGroupedQuantileGraph (container, data) {
         d3.selectAll(`.direction${i}`)
           .attr('stroke-width', QUANTILE_STROKE_WIDTH * 2)
         d3.selectAll(`.direction${i}.label`)
-          .style('font-size', FONT_SIZE * 1.2)
+          .attr("font-weight", 1000)
         d3.selectAll(`.direction${i}.quantile`)
           .style('visibility', 'visible')
       // Unhighlight direction
@@ -439,7 +439,7 @@ export function generateGroupedQuantileGraph (container, data) {
         d3.selectAll(`.direction${i}`)
           .attr('stroke-width', QUANTILE_STROKE_WIDTH)
         d3.selectAll(`.direction${i}.label`)
-          .style('font-size', FONT_SIZE)
+        .attr("font-weight", 0)
         d3.selectAll(`.direction${i}.quantile`)
           .style('visibility', 'hidden')
       })

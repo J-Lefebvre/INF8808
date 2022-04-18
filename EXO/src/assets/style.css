@@ -33,6 +33,9 @@ select{
 .form-group{
     font-size: 13px
 }
+.modal-title{
+    font-size: 18px;
+}
 button {
     padding: 8px 30px;
     color: rgb(255, 255, 255);
@@ -86,13 +89,6 @@ button {
     background-color: #000000;
     color:rgb(255, 255, 255);
     padding:9px 15px;
-    border-bottom:1px solid #eee;
-    -webkit-border-top-left-radius: 5px;
-    -webkit-border-top-right-radius: 5px;
-    -moz-border-radius-topleft: 5px;
-    -moz-border-radius-topright: 5px;
-     border-top-left-radius: 5px;
-     border-top-right-radius: 5px;
 }
 .modal-body{
     background-color: #fafafa;

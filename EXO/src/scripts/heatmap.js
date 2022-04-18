@@ -38,7 +38,7 @@ import * as helper from './helper.js'
 
 
 // ===================== CONSTANTES  =====================
-const FONT_SIZE = 16
+const FONT_SIZE = 14
 const ID_VIZ = 'graph-heatmap';
 const MARGIN = { top: 150, right: 250, bottom: 300, left: 200 }
 const HEIGHT = 1000
@@ -328,8 +328,9 @@ export function appendAxes (g) {
     .attr("transform", "translate(0, "+graphSize.height+" )")
     .call(d3.axisBottom(xScale))
     .selectAll("text")
-    .attr("opacity", 0.0)
-    .style("font-size", "14px")
+    .attr("opacity", 1.0)
+    .attr("font-size", "10px")
+    .attr('font-family', 'sans-serif')
     .attr("id", (x) => {
       return  x.replace(/[^a-zA-Z0-9]/g,'');
     });
@@ -344,7 +345,8 @@ export function appendAxes (g) {
     .call(d3.axisLeft(yScale).tickSize(0))
     .selectAll("text")
     .attr("opacity", 0.0)
-    .style("font-size", "14px")
+    .attr("font-size", "10px")
+    .attr('font-family', 'sans-serif')
     .attr("id", (x) => {
       return "v"+x;
     });
@@ -379,8 +381,8 @@ export function appendAxes (g) {
       rectSelected(this);
       selectTicks(d.nomArret, d.voyage);
     })
-    .on("mouseleave", function () {
-      unselectTicks();
+    .on("mouseleave", function (d) {
+      unselectTicks(d.nomArret, d.voyage);
       rectUnselected(this);
     });
 }
@@ -409,20 +411,30 @@ export function selectTicks(arret, voyage) {
 
   //console.log(arret.replace(/[^a-zA-Z0-9]/g,''));
   d3.select("#" + arret.replace(/[^a-zA-Z0-9]/g,''))
-  .attr("font-weight", "bold")
+  
+  .attr("font-weight", 1000)
+  .attr("font-size", "10px")
   .attr('opacity', 1.0);
   d3.select("#v" + voyage)
-  .attr("font-weight", "bold")
+  
+  .attr("font-weight", 1000)
+  
+  .attr("font-size", "10px")
   .attr('opacity', 1.0);;
 }
 
 /**
  */
-export function unselectTicks() {
+export function unselectTicks(arret, voyage) {
   // TODO : Unselect the ticks
-  d3.select("#"+ID_VIZ)
-  .selectAll("text")
+  d3.select("#"+arret.replace(/[^a-zA-Z0-9]/g,''))
   .attr("font-weight", "normal")
+  .attr("font-size", "10px")
+  .attr('opacity', 1.0);;
+  d3.select("#v" + voyage)
+  .attr("font-weight", "normal")
+  
+  .attr("font-size", "10px")
   .attr('opacity', 0.0);;
 }
 
@@ -447,7 +459,7 @@ export function unselectTicks() {
     .attr('y', MARGIN.top - FONT_SIZE * 2)
     .attr('text-anchor', 'middle')
     .text("Heatmap")
-    .style('font-size', FONT_SIZE)
+    .attr('font-size', FONT_SIZE)
 
   const defs = svg.append("defs");
 
@@ -528,7 +540,8 @@ export function draw(x, y, height, width, fill, colorScale) {
     .text((d) => parseInt(d).toLocaleString())
     .attr("text-anchor", "end")
     .attr("dominant-baseline", "middle")
-    .attr("font-size", "0.7em")
+    .attr("font-size", "12px")
+    .attr('font-family', 'sans-serif')
     .attr("x", x)
     .attr("y", function (d) {
       return scale(maxValue) - scale(d);
