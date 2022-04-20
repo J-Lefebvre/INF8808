@@ -25,8 +25,8 @@ import * as groupedQuantile from './scripts/grouped-quantile.js'
   helper.initPanelDiv()
 
   // Solution temporaire, éventuellement l'utilisateur peut choisir la période qui l'intéresse, s'il veut inclure les week-end et les fériés.
-  const startDate = new Date('2021-09-01')
-  const endDate = new Date('2021-12-01')
+  const startDate = new Date('2021/09/01')
+  const endDate = new Date('2021/12/01')
   const typeJour = 'semaine'
   const ferie = false
 
@@ -51,11 +51,12 @@ import * as groupedQuantile from './scripts/grouped-quantile.js'
         d.arret_Latitude = +d.arret_Latitude
         d.arret_Longitude = +d.arret_Longitude
       })
-      //console.log(csvData)
+
       preprocess.addDayType(csvData)
       preprocess.aggregateData(csvData, vizData, startDate, endDate, typeJour, ferie)
-      
-      groupedQuantile.generateViz3(vizData);
+      console.log(vizData)
+
+      groupedQuantile.generateViz3(vizData)
     })
   }
 })(d3)

@@ -7,10 +7,10 @@ import * as candlestick from './scripts/candlestick'
 import bootstrap from 'bootstrap'
 
 /**
- * @file 
+ * @file
  * @author Adam Prévost, Armelle Jézéquel, Clara Serruau, Jules Lefebvre, Julien Dupuis
  * @version 1.0.0
- * 
+ *
  * La structure du projet est inspirée de celle employé pour les TPs de INF8808 créée par Olivia Gélinas.
  */
 
@@ -27,8 +27,8 @@ import bootstrap from 'bootstrap'
   helper.initPanelDiv()
 
   // Solution temporaire, éventuellement l'utilisateur peut choisir la période qui l'intéresse, s'il veut inclure les week-end et les fériés.
-  const startDate = new Date('2021-09-01')
-  const endDate = new Date('2021-12-01')
+  const startDate = new Date('09-01-2021')
+  const endDate = new Date('12-01-2021')
   const typeJour = 'semaine'
   const ferie = false
 
@@ -53,12 +53,11 @@ import bootstrap from 'bootstrap'
         d.arret_Latitude = +d.arret_Latitude
         d.arret_Longitude = +d.arret_Longitude
       })
-      //console.log(csvData)
+
       preprocess.addDayType(csvData)
       preprocess.aggregateData(csvData, vizData, startDate, endDate, typeJour, ferie)
-      heatmap.drawHeatmap(vizData, 9, 'Lafontaine Via Gare  Saint-Jérôme', 'moyMinutesEcart')
-      candlestick.generateViz2(vizData, 9, 'Lafontaine Via Gare  Saint-Jérôme', 15);
-
+      //heatmap.drawHeatmap(vizData, 9, 'Lafontaine Via Gare  Saint-Jérôme', 'moyMinutesEcart')
+      //candlestick.generateViz2(vizData, 9, 'Lafontaine Via Gare  Saint-Jérôme', 15)
     })
   }
 })(d3)
