@@ -54,7 +54,6 @@ import * as groupedQuantile from './scripts/grouped-quantile.js'
 
       preprocess.addDayType(csvData)
       preprocess.aggregateData(csvData, vizData, startDate, endDate, typeJour, ferie)
-      console.log(vizData)
 
       groupedQuantile.generateViz3(vizData)
     })

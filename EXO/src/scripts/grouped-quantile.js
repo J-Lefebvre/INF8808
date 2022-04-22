@@ -1,6 +1,6 @@
 import * as helper from './helper.js'
 
-const MARGIN = { top: 52, right: 100, bottom: 125, left: 100 }
+const MARGIN = { top: 52, right: 80, bottom: 100, left: 80 }
 const FONT_SIZE = 14
 const DIRECTIONS_ANGLE = -45
 const QUANTILE_STROKE_COLOR = 'black'
@@ -9,6 +9,8 @@ const QUANTILE_STROKE_WIDTH = 2
 const NUMBER_OF_TICKS = 10
 const GRADIENT_COLORS = ['#ff9999', '#99ff99', '#ffff99']
 const GRADIENT_THRESHOLDS = ['10', '5', '0', '-5']
+
+var selectValue = ''
 
 /**
  * @param vizData
@@ -117,7 +119,7 @@ export function generateDelayGraph (container, data, vizData) {
     .attr('fill', '#898989')
 
   // Legend
-  const legend = svg.insert('g', '#x-axis').style("font-size","12px")
+  const legend = svg.insert('g', '#x-axis').style('font-size', '12px')
   const middleY = (HEIGHT - MARGIN.top - MARGIN.bottom) / 2 + MARGIN.top
   const squareWidth = FONT_SIZE * 2 / 3
   const paddingX = FONT_SIZE * 2
@@ -164,31 +166,80 @@ export function generateDelayGraph (container, data, vizData) {
  */
 export function generateTrafficGraph (container, data, vizData) {
   // Fetch data
-  data.quantileSets = getTrafficQuantileSets(vizData, 'moyMinutesEcart')
+  const [quantileTripSets, quantileDaySets, quantileWeekSets] = getTrafficQuantileSets(vizData)
+  if (selectValue === '') {
+    data.quantileSets = quantileTripSets
+  } else {
+    if (selectValue === 'week') {
+      data.quantileSets = quantileWeekSets
+    } else if (selectValue === 'day') {
+      data.quantileSets = quantileDaySets
+    } else if (selectValue === 'trip') {
+      data.quantileSets = quantileTripSets
+    }
+  }
 
+  // Create select
+  const weekOption = document.createElement('option')
+  weekOption.value = 'week'
+  weekOption.innerHTML = 'semaine'
+  const dayOption = document.createElement('option')
+  dayOption.value = 'day'
+  dayOption.innerHTML = 'jour'
+  const tripOption = document.createElement('option')
+  tripOption.value = 'trip'
+  tripOption.innerHTML = 'trajet'
+  const select = document.createElement('select')
+  select.appendChild(tripOption)
+  select.appendChild(dayOption)
+  select.appendChild(weekOption)
+  if (selectValue !== '') {
+    select.value = selectValue
+  }
+  select.addEventListener('change', function () {
+    if (this.value === 'week') {
+      data.quantileSets = quantileWeekSets
+    } else if (this.value === 'day') {
+      data.quantileSets = quantileDaySets
+    } else if (this.value === 'trip') {
+      data.quantileSets = quantileTripSets
+    }
+    selectValue = this.value
+    setTrafficGraph(container, data, select)
+  })
+  // generate traffic graph
+  setTrafficGraph(container, data, select)
+}
+
+/**
+ * @param {Selection} container The div to generate the graph in
+ * @param {object} data The data to fetch
+ * @param {object} select select
+ */
+export function setTrafficGraph (container, data, select) {
   // Generate common graph
   data.title = 'Achalandage Moyen'
   var [svg] = generateGroupedQuantileGraph(container, data)
-  // Set y axis label
+
+  // Position select
+  const top = svg.node().getBoundingClientRect().top + 30
+  const left = svg.node().getBoundingClientRect().left + MARGIN.left - 70
+  select.setAttribute('style', `position: absolute; top: ${top}px; left: ${left}px; font-size: 12px`)
+  container.node().appendChild(select)
+
+  // Label
   svg.select('#y-axis > .label')
-    .text("")
+    .text('')
   svg.select('#y-axis > .label')
     .append('tspan')
-    .attr("x","88")
-    .attr("y","21")
-    .text("Nombre")
+    .attr('x', (MARGIN.left - 1).toString())
+    .attr('y', '13')
+    .text('Nombre de')
   svg.select('#y-axis > .label')
     .append('tspan')
-    .attr("dx","-51")
-    .attr("dy","15")
-    .text("de personnes")
-    svg.select('#y-axis > .label')
-    .append('tspan')
-    .attr("dx","-84")
-    .attr("dy","14")
-    .text("par trajet")
-    /*.text('Nombre de personnes par trajet')
-    .attr('fill', '#898989')*/
+    .attr('x', (MARGIN.left + 9).toString())
+    .attr('y', '25')
+    .text('personnes par')
 }
 
 /**
@@ -240,7 +291,7 @@ export function generateGroupedQuantileGraph (container, data) {
     }
   }
   var dataScale = d3.scaleLinear()
-    .domain([minValue, maxValue])
+    .domain([Math.min(minValue, 0), maxValue])
     .range([HEIGHT - MARGIN.bottom - FONT_SIZE / 2, MARGIN.top + FONT_SIZE / 2])
 
   // ===================== X AXIS =====================
@@ -262,7 +313,7 @@ export function generateGroupedQuantileGraph (container, data) {
       .attr('y', lineValuesY)
       .attr('text-anchor', 'middle')
       .text(line)
-    .attr('fill', '#898989')
+      .attr('fill', '#898989')
       .style('font-size', FONT_SIZE)
   }
   // Draw direction values
@@ -273,7 +324,7 @@ export function generateGroupedQuantileGraph (container, data) {
       .attr('text-anchor', 'end')
       .attr('transform', `translate(${x}, ${directionValuesY}) rotate(${DIRECTIONS_ANGLE})`)
       .text(data.directions[i])
-      .style('font-size', "12px")
+      .style('font-size', '12px')
       .attr('font-family', 'sans-serif')
       .attr('class', `direction${i} label`)
   }
@@ -400,15 +451,22 @@ export function generateGroupedQuantileGraph (container, data) {
       .attr('stroke-width', QUANTILE_STROKE_WIDTH)
       .attr('class', `direction${i}`)
     // Draw quantile values
+    const yValues = [0, 0, 0, 0, 0]
+    const minOffset = 11
+    const centerOffset = 4
+    yValues[2] = dataScale(data.quantileSets[i][2]) + centerOffset
+    yValues[3] = Math.min(yValues[2] - minOffset, dataScale(data.quantileSets[i][3]) + centerOffset)
+    yValues[4] = Math.min(yValues[3] - minOffset, dataScale(data.quantileSets[i][4]) + centerOffset)
+    yValues[1] = Math.max(yValues[2] + minOffset, dataScale(data.quantileSets[i][1]) + centerOffset)
+    yValues[0] = Math.max(yValues[1] + minOffset, dataScale(data.quantileSets[i][0]) + centerOffset)
     for (let j = 0; j < data.quantileSets[i].length; j++) {
       const quantile = bars.append('g')
         .attr('class', `direction${i} quantile`)
         .style('visibility', 'hidden')
       const x = directionsScale(data.directions[i]) + (i % 2 === 0 ? -1 : 1) * (BAR_WIDTH / 2 + FONT_SIZE / 2)
-      const y = dataScale(data.quantileSets[i][j])
       quantile.append('text')
         .attr('x', x)
-        .attr('y', y)
+        .attr('y', yValues[j])
         .attr('text-anchor', (i % 2 === 0 ? 'end' : 'start'))
         .text(Math.round(data.quantileSets[i][j]))
         .style('font-size', FONT_SIZE)
@@ -431,7 +489,7 @@ export function generateGroupedQuantileGraph (container, data) {
         d3.selectAll(`.direction${i}`)
           .attr('stroke-width', QUANTILE_STROKE_WIDTH * 2)
         d3.selectAll(`.direction${i}.label`)
-          .attr("font-weight", 1000)
+          .attr('font-weight', 1000)
         d3.selectAll(`.direction${i}.quantile`)
           .style('visibility', 'visible')
       // Unhighlight direction
@@ -439,7 +497,7 @@ export function generateGroupedQuantileGraph (container, data) {
         d3.selectAll(`.direction${i}`)
           .attr('stroke-width', QUANTILE_STROKE_WIDTH)
         d3.selectAll(`.direction${i}.label`)
-        .attr("font-weight", 0)
+          .attr('font-weight', 0)
         d3.selectAll(`.direction${i}.quantile`)
           .style('visibility', 'hidden')
       })
@@ -464,16 +522,22 @@ export function generateGroupedQuantileGraph (container, data) {
  */
 export function getDelayQuantileSets (vizData) {
   const quantileSets = []
-  for (const line of vizData) {
-    for (const direction of line.girouettes) {
-      const delays = []
-      for (const trip of direction.voyages) {
-        for (const stop of trip.arrets) {
-          delays.push(stop.moyMinutesEcart)
+  const delaySets = [[], [], [], []]
+  for (const day of vizData) {
+    for (let i = 0; i < day.lignes.length; i++) {
+      const line = day.lignes[i]
+      for (let j = 0; j < line.girouettes.length; j++) {
+        const direction = line.girouettes[j]
+        for (const trip of direction.voyages) {
+          for (const stop of trip.arrets) {
+            delaySets[i * day.lignes.length + j].push(stop.minutesEcart)
+          }
         }
       }
-      quantileSets.push(helper.getQuantiles(delays))
     }
+  }
+  for (const delaySet of delaySets) {
+    quantileSets.push(helper.getQuantiles(delaySet))
   }
   return quantileSets
 }
@@ -483,19 +547,49 @@ export function getDelayQuantileSets (vizData) {
  * @returns {Array<number>} The quantile sets
  */
 export function getTrafficQuantileSets (vizData) {
-  const quantileSets = []
-  for (const line of vizData) {
-    for (const direction of line.girouettes) {
-      const tripNClients = []
-      for (const trip of direction.voyages) {
-        let nClients = 0
-        for (const stop of trip.arrets) {
-          nClients += stop.moyNClients
+  const tripSets = [[], [], [], []]
+  const daySets = [[], [], [], []]
+  const weekSets = [[], [], [], []]
+  let lastWeek = helper.getWeekNumber(new Date(Date.parse(vizData[0].date)))[1]
+  let weekClients = [0, 0, 0, 0]
+  for (const day of vizData) {
+    const week = helper.getWeekNumber(new Date(Date.parse(day.date)))[1]
+    for (let i = 0; i < day.lignes.length; i++) {
+      const line = day.lignes[i]
+      for (let j = 0; j < line.girouettes.length; j++) {
+        const direction = line.girouettes[j]
+        let dayClients = 0
+        for (const trip of direction.voyages) {
+          let tripClients = 0
+          for (const stop of trip.arrets) {
+            tripClients += stop.nClients
+          }
+          dayClients += tripClients
+          tripSets[i * day.lignes.length + j].push(tripClients)
         }
-        tripNClients.push(nClients)
+        daySets[i * day.lignes.length + j].push(dayClients)
+        weekClients[i * day.lignes.length + j] += dayClients
       }
-      quantileSets.push(helper.getQuantiles(tripNClients))
+    }
+    if (lastWeek !== week) {
+      for (let i = 0; i < weekClients.length; i++) {
+        weekSets[i].push(weekClients[i])
+      }
+      weekClients = [0, 0, 0, 0]
+      lastWeek = week
     }
   }
-  return quantileSets
+  const quantileTripSets = []
+  for (const tripSet of tripSets) {
+    quantileTripSets.push(helper.getQuantiles(tripSet))
+  }
+  const quantileDaySets = []
+  for (const daySet of daySets) {
+    quantileDaySets.push(helper.getQuantiles(daySet))
+  }
+  const quantileWeekSets = []
+  for (const weekSet of weekSets) {
+    quantileWeekSets.push(helper.getQuantiles(weekSet))
+  }
+  return [quantileTripSets, quantileDaySets, quantileWeekSets]
 }

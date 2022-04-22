@@ -49,7 +49,7 @@ export function setCanvasSize (width, height) {
  * @param {*} g The d3 Selection of the graph's g SVG element
  */
 export function appendGraphLabels (g) {
- /* g.append('text')
+  /* g.append('text')
     .text('Achalandage et ponctualité des lignes de bus 9 et 22 de la couronne Nord de Montréal')
     .attr('class', 'title')
     .attr('fill', '#000000')
@@ -166,15 +166,11 @@ export function getClosestStep (nSteps, domain) {
 export function getSteps (nSteps, domain) {
   var step = getClosestStep(nSteps, domain)
   var steps = []
-  if (domain[0] <= 0 && domain[1] >= 0) {
-    steps.push(0)
-  } else {
-    let firstStep = Math.floor(domain[0])
-    while (firstStep % step !== 0) {
-      firstStep += 1
-    }
-    steps.push(firstStep)
+  let firstStep = Math.floor(domain[0])
+  while (firstStep % step !== 0) {
+    firstStep += 1
   }
+  steps.push(firstStep)
   while (steps[steps.length - 1] < domain[1] - step) {
     steps.push(steps[steps.length - 1] + step)
   }
@@ -198,4 +194,22 @@ export function getQuantiles (array) {
     array[array.length - 1]
   ]
   return quantiles
+}
+
+/**
+ * @param {Date} d date
+ * @returns {number} weekNo
+ */
+export function getWeekNumber (d) {
+  // Copy date so don't modify original
+  d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()))
+  // Set to nearest Thursday: current date + 4 - current day number
+  // Make Sunday's day number 7
+  d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7))
+  // Get first day of year
+  var yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1))
+  // Calculate full weeks to nearest Thursday
+  var weekNo = Math.ceil((((d - yearStart) / 86400000) + 1) / 7)
+  // Return array of year and week number
+  return [d.getUTCFullYear(), weekNo]
 }
