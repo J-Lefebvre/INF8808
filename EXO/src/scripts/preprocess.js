@@ -15,7 +15,7 @@
  *
  * @param {object[]} data L'array d'objets qui contient les lignes du csv
  */
- export function addDayType (data) {
+export function addDayType (data) {
   for (var i = 0; i < data.length; i++) {
     // jour_semaine
     data[i].jour_semaine = data[i].date.getDay()
@@ -73,39 +73,46 @@ export function aggregateData (csvData, vizData, startDate, endDate, typeJour, f
           {
             codeArret: csvData[i].arret_code,
             nomArret: csvData[i].arret_nom,
-            sequenceArret : csvData[i].sequence_arret,
-            minutesEcart: [],
+            sequenceArret: csvData[i].sequence_arret,
+            minutesEcart: new Map(),
             moyMinutesEcart: null,
-            nClients: [],
+            nClients: new Map(),
             moyNClients: null,
-            ponctualite: [],
+            ponctualite: new Map(),
             tauxPonctualite: null,
-            minutesEcartClient: [],
+            minutesEcartClient: new Map(),
             moyMinutesEcartClient: null
           })
         posArret = vizData[posLigne].girouettes[posGirouette].voyages[posVoyage].arrets.length - 1
       }
 
-      vizData[posLigne].girouettes[posGirouette].voyages[posVoyage].arrets[posArret].minutesEcart.push(csvData[i].Minutes_ecart_planifie)
-      vizData[posLigne].girouettes[posGirouette].voyages[posVoyage].arrets[posArret].nClients.push(csvData[i].montants)
-      vizData[posLigne].girouettes[posGirouette].voyages[posVoyage].arrets[posArret].ponctualite.push(csvData[i].Etat_Ponctualite)
-      vizData[posLigne].girouettes[posGirouette].voyages[posVoyage].arrets[posArret].minutesEcartClient.push(csvData[i].Minutes_ecart_planifie * csvData[i].montants)
+      vizData[posLigne].girouettes[posGirouette].voyages[posVoyage].arrets[posArret].minutesEcart.set(csvData[i].date, csvData[i].Minutes_ecart_planifie)
+      vizData[posLigne].girouettes[posGirouette].voyages[posVoyage].arrets[posArret].nClients.set(csvData[i].date, csvData[i].montants)
+      vizData[posLigne].girouettes[posGirouette].voyages[posVoyage].arrets[posArret].ponctualite.set(csvData[i].date, csvData[i].Etat_Ponctualite)
+      vizData[posLigne].girouettes[posGirouette].voyages[posVoyage].arrets[posArret].minutesEcartClient.set(csvData[i].date, csvData[i].Minutes_ecart_planifie * csvData[i].montants)
     }
   }
-
-  // Fonctions pour créer les indicateurs
-  const average = arr => +(arr.reduce((a, b) => a + b, 0) / arr.length).toFixed(2) // https://poopcode.com/calculate-the-average-of-an-array-of-numbers-in-javascript/
-  const computeTauxPonctualite = arr => arr.filter(x => x === 'Ponctuel').length / arr.length
 
   // Parcours de vizData pour calculer les indicateurs pour chaque ligne.arret
   vizData.forEach(function (ligne) {
     ligne.girouettes.forEach(function (girouette) {
       girouette.voyages.forEach(function (voyage) {
         voyage.arrets.forEach(function (arret) {
-          arret.moyMinutesEcart = average(arret.minutesEcart)
-          arret.moyNClients = average(arret.nClients)
-          arret.moyMinutesEcartClient = average(arret.minutesEcartClient)
-          arret.tauxPonctualite = computeTauxPonctualite(arret.ponctualite)
+          var sumMinutesEcart = 0
+          arret.minutesEcart.forEach(v => { sumMinutesEcart += v })
+          arret.moyMinutesEcart = sumMinutesEcart / arret.minutesEcart.size
+
+          var sumNClients = 0
+          arret.nClients.forEach(v => { sumNClients += v })
+          arret.moyNClients = sumNClients / arret.nClients.size
+
+          var sumMinutesEcartClient = 0
+          arret.minutesEcartClient.forEach(v => { sumMinutesEcartClient += v })
+          arret.moyMinutesEcartClient = sumMinutesEcartClient / arret.minutesEcartClient.size
+
+          var countPonctuel = 0
+          arret.ponctualite.forEach(v => { if (v === 'Ponctuel') { countPonctuel++ } })
+          arret.tauxPonctualite = countPonctuel / arret.ponctualite.size
         })
       })
     })
