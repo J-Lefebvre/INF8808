@@ -27,14 +27,14 @@
             
             <div class="row align-items-left form-group" >
               <p style="margin-left:-10em" class="col">Ligne :</p>
-              <select class="col form-select" aria-label="Ligne">
+              <select class="col form-select" id="line-dropdown" aria-label="Ligne">
                 <option selected value="9">9</option>
                 <option value="22">22</option>
               </select>
               <p class="col">Direction :</p>
-              <select class="col-3 form-select" aria-label="Direction">
-                <option selected value="Station">Station Montmorency</option>
-                <option value="Gare">Gare Saint Jérome</option>
+              <select class="col-3 form-select" id="direction-dropdown" aria-label="Direction">
+                <option selected value="Métro Montmorency">Station Montmorency</option>
+                <option value="Lafontaine Via Gare  Saint-Jérôme">Gare Saint Jérome</option>
               </select>
               <p class="col">Indicateur :</p>
               <select class="col form-select" aria-label="Indicateur">
@@ -85,7 +85,7 @@
             <div class="container">
               <div class="row align-items-left form-group" >
               <p style="margin-left:-10em;max-width: 18%;" class="col">Trajet :</p>
-              <select style="max-width: 15%;" class="col form-select" aria-label="Ligne">
+              <select style="max-width: 15%;" class="col form-select" id="traject-dropdown" aria-label="Ligne">
                 <!--To be récupéré automatiquement-->
                 <option selected value="1">1</option>
                 <option value="2">2</option>

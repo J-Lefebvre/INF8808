@@ -10,7 +10,15 @@ const BAR_STROKE_WIDTH = 2
 /**
  *
  */
-export function generateViz2 (data, line, direction, trajectNumber) {
+export function generateViz2 (data) {
+	console.log(data)
+	//set onload dropdown values
+	data.currentLine = parseInt(d3.select("#line-dropdown").node().value);
+	data.currentDirection = d3.select("#direction-dropdown").node().value;
+	data.currentTraject = parseInt(d3.select("#traject-dropdown").node().value); 
+	updateDirectionList(data, data.currentLine)
+	updateTrajectList(data, data.currentLine, data.currentDirection)
+
 	var container = d3.select('#candlestick-graph-container')
 	var topDiv = container.append('div')
 		.style('width', '100%')
@@ -33,12 +41,54 @@ export function generateViz2 (data, line, direction, trajectNumber) {
 			.style('width', '80%')
 			.style('height', '100%')
 
-	// Fetch data
-	var dataArray = getData(data, line, direction, trajectNumber);
+	// Fetch dropdown value change
+	d3.select('#direction-dropdown')
+  		.on('change', function() {
+    	var newData = d3.select("#direction-dropdown").node().value;
+    	data.currentDirection = newData;
+		updateTrajectList(data, data.currentLine, data.currentDirection)
+		var dataArray = getData(data, data.currentLine, data.currentDirection, data.currentTraject);
+		data.stops = dataArray[0]
+		data.delay = dataArray[1]
+		data.amounts = dataArray[2]
+		generateTopGraph(candlestickContainer, data)
+		setLegend(legendContainer)
+		generateBottomGraph(barGraphContainer, data)
+	});
+	
+	d3.select('#traject-dropdown')
+  		.on('change', function() {
+    	var newData = eval(d3.select(this).property('value'));
+    	data.currentTraject = newData;
+		var dataArray = getData(data, data.currentLine, data.currentDirection, data.currentTraject);
+		data.stops = dataArray[0]
+		data.delay = dataArray[1]
+		data.amounts = dataArray[2]
+		generateTopGraph(candlestickContainer, data)
+		setLegend(legendContainer)
+		generateBottomGraph(barGraphContainer, data)
+	});
+
+	d3.select('#line-dropdown')
+  		.on('change', function() {
+    	var newData = parseInt(eval(d3.select(this).property('value')));
+    	data.currentLine = newData;
+		updateDirectionList(data, data.currentLine)
+		updateTrajectList(data, data.currentLine, data.currentDirection)
+		var dataArray = getData(data, data.currentLine, data.currentDirection, data.currentTraject);
+		data.stops = dataArray[0]
+		data.delay = dataArray[1]
+		data.amounts = dataArray[2]
+		generateTopGraph(candlestickContainer, data)
+		setLegend(legendContainer)
+		generateBottomGraph(barGraphContainer, data)
+	});
+
+	var dataArray = getData(data, data.currentLine, data.currentDirection, data.currentTraject);
 	data.stops = dataArray[0]
 	data.delay = dataArray[1]
 	data.amounts = dataArray[2]
-	
+
   // Regenerate graphs on resize
 	if(candlestickContainer.node()) {
 		new ResizeObserver(() => { generateTopGraph(candlestickContainer, data); setLegend(legendContainer); })
@@ -46,7 +96,36 @@ export function generateViz2 (data, line, direction, trajectNumber) {
 		new ResizeObserver(() => { generateBottomGraph(barGraphContainer, data) })
 		.observe(barGraphContainer.node())
 	}
-	
+}
+export function updateDirectionList(vizData, line) {
+	var posLigne = vizData.findIndex(e => e.ligne === line)
+	var options = "";
+	for (var i = 0; i < vizData[posLigne].girouettes.length; i++) {
+		var direction = vizData[posLigne].girouettes[i].girouette;
+		if (i == 0){
+			options += `<option selected value="${direction}">${direction}</option>`;
+			vizData.currentDirection = direction;
+		 } else {
+			options += `<option value="${direction}">${direction}</option>`;
+		}
+	}
+	document.getElementById("direction-dropdown").innerHTML = options;
+}
+
+export function updateTrajectList(vizData, line, direction) {
+	var posLigne = vizData.findIndex(e => e.ligne === line)
+	var posGirouette = vizData[posLigne].girouettes.findIndex(e => e.girouette === direction)
+	var options = "";
+	for (var i = 0; i < vizData[posLigne].girouettes[posGirouette].voyages.length; i++) {
+		var trajectNumber = vizData[posLigne].girouettes[posGirouette].voyages[i].voyage;
+		if (i == 0){
+			options += `<option selected value=${trajectNumber}>${trajectNumber}</option>`;
+			vizData.currentTraject = trajectNumber;
+		 } else {
+			options += `<option value=${trajectNumber}>${trajectNumber}</option>`;
+		}
+	}
+	document.getElementById("traject-dropdown").innerHTML = options;
 }
 
 /**
@@ -55,7 +134,7 @@ export function generateViz2 (data, line, direction, trajectNumber) {
  */
 export function getData (vizData, line, direction, trajectNumber) {
 	var posLigne = vizData.findIndex(e => e.ligne === line)
-  var posGirouette = vizData[posLigne].girouettes.findIndex(e => e.girouette === direction)
+  	var posGirouette = vizData[posLigne].girouettes.findIndex(e => e.girouette === direction)
 	var posVoyage = vizData[posLigne].girouettes[posGirouette].voyages.findIndex(e => e.voyage === trajectNumber)
 	var delayIndicater = "moyMinutesEcart";
 	var ammountIndicater = "moyNClients";
@@ -150,7 +229,6 @@ export function generateBottomGraph (container, data) {
  */
  export function generateCandleGraph (container, data) {
   // ===================== SETUP =====================
-  
   // Delete existing content
   container.html('')
   // Set size
@@ -293,8 +371,8 @@ export function generateBottomGraph (container, data) {
 		hoverBars.append('rect')
 		.attr('x', x)
 		.attr('width', xScale.bandwidth())
-		.attr('height', yScale(0) - yScale(Math.max(...data.amounts)))
-		.attr('y', yScale(Math.max(...data.amounts)))
+		.attr('height', yScale(0) - yScale(Math.max(...data.delay) - Math.min(...data.delay)))
+		.attr('y', yScale(Math.max(...data.delay)))
 		.attr('fill', 'transparent')
 		// Highlight direction
 		.on("mouseover", function(d) {
