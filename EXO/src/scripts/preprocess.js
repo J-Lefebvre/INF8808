@@ -118,3 +118,68 @@ export function aggregateData (csvData, vizData, startDate, endDate, typeJour, f
     })
   })
 }
+
+/**
+ * aggregateDataForViz3() remplit l'objet vizData à partir des données du csv (data)
+ *
+ * @param {*} csvData L'array d'objets qui contient les lignes du csv, modifié par preprocess.addDayType()
+ * @param {*} vizData L'array d'objets qui contient les données consolidées requises pour générer les viz
+ * @param {*} startDate Date de début
+ * @param {*} endDate Date de fin
+ * @param {*} typeJour On considère semaine ou weekend
+ * @param {*} ferie On considère les fériés si true
+ */
+export function aggregateDataForViz3 (csvData, vizData, startDate, endDate, typeJour, ferie) {
+  // Boucle sur les lignes de csvData pour remplir la structure vizData
+  for (var i = 0; i < csvData.length; i++) {
+    if (csvData[i].date >= startDate && csvData[i].date <= endDate && csvData[i].type_jour === typeJour && csvData[i].ferie === ferie) {
+      if (vizData.length === 0) {
+        vizData.push({ date: csvData[i].date, lignes: [] })
+      }
+
+      // On ajoute la date si elle n'existe pas déjà dans vizData
+      var posDate = vizData.findIndex(e => e.date.valueOf() === csvData[i].date.valueOf())
+      if (posDate === -1) {
+        vizData.push({ date: csvData[i].date, lignes: [] })
+        posDate = vizData.length - 1
+      }
+
+      // On ajoute la ligne si elle n'existe pas déjà dans vizData
+      var posLigne = vizData[posDate].lignes.findIndex(e => e.ligne === csvData[i].ligne)
+      if (posLigne === -1) {
+        vizData[posDate].lignes.push({ ligne: csvData[i].ligne, girouettes: [] })
+        posLigne = vizData[posDate].lignes.length - 1
+      }
+
+      // On ajoute la girouette si elle n'existe pas déjà dans vizData
+      var posGirouette = vizData[posDate].lignes[posLigne].girouettes.findIndex(e => e.girouette === csvData[i].Girouette)
+      if (posGirouette === -1) {
+        vizData[posDate].lignes[posLigne].girouettes.push({ girouette: csvData[i].Girouette, voyages: [] })
+        posGirouette = vizData[posDate].lignes[posLigne].girouettes.length - 1
+      }
+
+      // On ajoute le voyage s'il n'existe pas déjà dans vizData
+      var posVoyage = vizData[posDate].lignes[posLigne].girouettes[posGirouette].voyages.findIndex(e => e.voyage === csvData[i].voyage)
+      if (posVoyage === -1) {
+        vizData[posDate].lignes[posLigne].girouettes[posGirouette].voyages.push({ voyage: csvData[i].voyage, arrets: [] })
+        posVoyage = vizData[posDate].lignes[posLigne].girouettes[posGirouette].voyages.length - 1
+      }
+
+      // On ajoute l'arrêt s'il n'existe pas déjà dans vizData
+      var posArret = vizData[posDate].lignes[posLigne].girouettes[posGirouette].voyages[posVoyage].arrets.findIndex(e => e.codeArret === csvData[i].arret_code)
+      if (posArret === -1) {
+        vizData[posDate].lignes[posLigne].girouettes[posGirouette].voyages[posVoyage].arrets.push(
+          {
+            codeArret: csvData[i].arret_code,
+            nomArret: csvData[i].arret_nom,
+            sequenceArret: csvData[i].sequence_arret,
+            minutesEcart: csvData[i].Minutes_ecart_planifie,
+            nClients: csvData[i].montants,
+            ponctualite: csvData[i].Etat_Ponctualite,
+            minutesEcartClient: csvData[i].Minutes_ecart_planifie * csvData[i].montants
+          })
+        posArret = vizData[posDate].lignes[posLigne].girouettes[posGirouette].voyages[posVoyage].arrets.length - 1
+      }
+    }
+  }
+}

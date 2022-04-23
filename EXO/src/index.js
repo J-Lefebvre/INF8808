@@ -51,12 +51,8 @@ import * as groupedQuantile from './scripts/grouped-quantile.js'
         d.arret_Latitude = +d.arret_Latitude
         d.arret_Longitude = +d.arret_Longitude
       })
-
       preprocess.addDayType(csvData)
-      preprocess.aggregateData(csvData, vizData, startDate, endDate, typeJour, ferie)
-
-      console.log(vizData) // TODO : delete
-
+      preprocess.aggregateDataForViz3(csvData, vizData, startDate, endDate, typeJour, ferie)
       groupedQuantile.generateViz3(vizData)
     })
   }
