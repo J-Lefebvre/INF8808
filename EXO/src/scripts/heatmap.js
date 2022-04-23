@@ -179,7 +179,7 @@ function flatten_Data (dataStructurees, nom_moy, nom_liste){
  *   This function handles the graph's sizing.
  */
 export function setSizing () {
-  console.log(d3.select('.graph'))
+  //console.log(d3.select('.graph'))
   bounds = d3.select('.graph').node().getBoundingClientRect()
 
   svgSize = {
@@ -526,7 +526,7 @@ export function draw(x, y, height, width, fill, colorScale) {
   const minValue = csd[0];
   const steps = d3.range(minValue, maxValue, step )
 
-  console.log(steps)
+  //console.log(steps)
   const scale = d3.scaleLinear().domain([csd[0], csd[csd.length-1]]).range([0, height]);
   const axis = d3.select(".legend.axis");
 

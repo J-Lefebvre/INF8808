@@ -1,16 +1,24 @@
 const FONT_SIZE = 14
-const BAR_FILL_COLOR = '#D5E8D4'
-const BAR_STROKE_COLOR = '#8DBA74'
-const BAR_FILL_COLOR_POSITIVE = '#D5E8D4'
-const BAR_STROKE_COLOR_POSITIVE = '#8DBA74'
-const BAR_STROKE_COLOR_NEGATIVE = '#C57471'
-const BAR_FILL_COLOR_NEGATIVE = '#F8CECC'
+const BAR_FILL_COLOR = '#9CE39C'
+const BAR_STROKE_COLOR = '#3FC93F'
+const BAR_FILL_COLOR_POSITIVE = '#9CE39C'
+const BAR_STROKE_COLOR_POSITIVE = '#3FC93F'
+const BAR_STROKE_COLOR_NEGATIVE = '#FE4747'
+const BAR_FILL_COLOR_NEGATIVE = '#FE8888'
 const BAR_STROKE_WIDTH = 2
 
 /**
  *
  */
-export function generateViz2 (data, line, direction, trajectNumber) {
+export function generateViz2 (data) {
+	console.log(data)
+	//set onload dropdown values
+	data.currentLine = parseInt(d3.select("#line-dropdown").node().value);
+	data.currentDirection = d3.select("#direction-dropdown").node().value;
+	data.currentTraject = parseInt(d3.select("#traject-dropdown").node().value); 
+	updateDirectionList(data, data.currentLine)
+	updateTrajectList(data, data.currentLine, data.currentDirection)
+
 	var container = d3.select('#candlestick-graph-container')
 	var topDiv = container.append('div')
 		.style('width', '100%')
@@ -33,12 +41,54 @@ export function generateViz2 (data, line, direction, trajectNumber) {
 			.style('width', '80%')
 			.style('height', '100%')
 
-	// Fetch data
-	var dataArray = getData(data, line, direction, trajectNumber);
+	// Fetch dropdown value change
+	d3.select('#direction-dropdown')
+  		.on('change', function() {
+    	var newData = d3.select("#direction-dropdown").node().value;
+    	data.currentDirection = newData;
+		updateTrajectList(data, data.currentLine, data.currentDirection)
+		var dataArray = getData(data, data.currentLine, data.currentDirection, data.currentTraject);
+		data.stops = dataArray[0]
+		data.delay = dataArray[1]
+		data.amounts = dataArray[2]
+		generateTopGraph(candlestickContainer, data)
+		setLegend(legendContainer)
+		generateBottomGraph(barGraphContainer, data)
+	});
+	
+	d3.select('#traject-dropdown')
+  		.on('change', function() {
+    	var newData = eval(d3.select(this).property('value'));
+    	data.currentTraject = newData;
+		var dataArray = getData(data, data.currentLine, data.currentDirection, data.currentTraject);
+		data.stops = dataArray[0]
+		data.delay = dataArray[1]
+		data.amounts = dataArray[2]
+		generateTopGraph(candlestickContainer, data)
+		setLegend(legendContainer)
+		generateBottomGraph(barGraphContainer, data)
+	});
+
+	d3.select('#line-dropdown')
+  		.on('change', function() {
+    	var newData = parseInt(eval(d3.select(this).property('value')));
+    	data.currentLine = newData;
+		updateDirectionList(data, data.currentLine)
+		updateTrajectList(data, data.currentLine, data.currentDirection)
+		var dataArray = getData(data, data.currentLine, data.currentDirection, data.currentTraject);
+		data.stops = dataArray[0]
+		data.delay = dataArray[1]
+		data.amounts = dataArray[2]
+		generateTopGraph(candlestickContainer, data)
+		setLegend(legendContainer)
+		generateBottomGraph(barGraphContainer, data)
+	});
+
+	var dataArray = getData(data, data.currentLine, data.currentDirection, data.currentTraject);
 	data.stops = dataArray[0]
 	data.delay = dataArray[1]
 	data.amounts = dataArray[2]
-	
+
   // Regenerate graphs on resize
 	if(candlestickContainer.node()) {
 		new ResizeObserver(() => { generateTopGraph(candlestickContainer, data); setLegend(legendContainer); })
@@ -46,7 +96,36 @@ export function generateViz2 (data, line, direction, trajectNumber) {
 		new ResizeObserver(() => { generateBottomGraph(barGraphContainer, data) })
 		.observe(barGraphContainer.node())
 	}
-	
+}
+export function updateDirectionList(vizData, line) {
+	var posLigne = vizData.findIndex(e => e.ligne === line)
+	var options = "";
+	for (var i = 0; i < vizData[posLigne].girouettes.length; i++) {
+		var direction = vizData[posLigne].girouettes[i].girouette;
+		if (i == 0){
+			options += `<option selected value="${direction}">${direction}</option>`;
+			vizData.currentDirection = direction;
+		 } else {
+			options += `<option value="${direction}">${direction}</option>`;
+		}
+	}
+	document.getElementById("direction-dropdown").innerHTML = options;
+}
+
+export function updateTrajectList(vizData, line, direction) {
+	var posLigne = vizData.findIndex(e => e.ligne === line)
+	var posGirouette = vizData[posLigne].girouettes.findIndex(e => e.girouette === direction)
+	var options = "";
+	for (var i = 0; i < vizData[posLigne].girouettes[posGirouette].voyages.length; i++) {
+		var trajectNumber = vizData[posLigne].girouettes[posGirouette].voyages[i].voyage;
+		if (i == 0){
+			options += `<option selected value=${trajectNumber}>${trajectNumber}</option>`;
+			vizData.currentTraject = trajectNumber;
+		 } else {
+			options += `<option value=${trajectNumber}>${trajectNumber}</option>`;
+		}
+	}
+	document.getElementById("traject-dropdown").innerHTML = options;
 }
 
 /**
@@ -55,7 +134,7 @@ export function generateViz2 (data, line, direction, trajectNumber) {
  */
 export function getData (vizData, line, direction, trajectNumber) {
 	var posLigne = vizData.findIndex(e => e.ligne === line)
-  var posGirouette = vizData[posLigne].girouettes.findIndex(e => e.girouette === direction)
+  	var posGirouette = vizData[posLigne].girouettes.findIndex(e => e.girouette === direction)
 	var posVoyage = vizData[posLigne].girouettes[posGirouette].voyages.findIndex(e => e.voyage === trajectNumber)
 	var delayIndicater = "moyMinutesEcart";
 	var ammountIndicater = "moyNClients";
@@ -150,7 +229,6 @@ export function generateBottomGraph (container, data) {
  */
  export function generateCandleGraph (container, data) {
   // ===================== SETUP =====================
-  
   // Delete existing content
   container.html('')
   // Set size
@@ -236,9 +314,11 @@ export function generateBottomGraph (container, data) {
 
 	// Bars
 	var lines = svg.append('g')
-	.attr('id', 'vertLine')
+		.attr('id', 'vertLine')
 	var bars = svg.append('g')
-	.attr('id', 'bars')
+		.attr('id', 'bars')
+	var hoverBars = svg.append('g')
+		.attr('id', 'hoverBars')
 	var previousDelay = 0;
 	var fillColor = BAR_FILL_COLOR_NEGATIVE
 	var strockeColor = BAR_STROKE_COLOR_NEGATIVE
@@ -279,6 +359,22 @@ export function generateBottomGraph (container, data) {
 		.attr('stroke', strockeColor)
 		.attr('stroke-width', BAR_STROKE_WIDTH)
 		.attr('class', `stop${i}`)
+		bars.append("text")
+			.text(`${data.delay[i]}`)
+			.attr('x', x + xScale.bandwidth() + 5)
+			.attr('y', y - 10)
+			.attr('fill', 'black')
+			.attr('class', `stop${i} textValue`)
+			.attr('font-size', 14)
+			.style('visibility', 'hidden')
+
+		hoverBars.append('rect')
+		.attr('x', x)
+		.attr('width', xScale.bandwidth())
+		.attr('height', yScale(0) - yScale(Math.max(...data.delay) - Math.min(...data.delay)))
+		.attr('y', yScale(Math.max(...data.delay)))
+		.attr('fill', 'transparent')
+		// Highlight direction
 		.on("mouseover", function(d) {
 			d3.selectAll(`.stop${i}`).raise()
 				.attr('stroke-width', BAR_STROKE_WIDTH * 2)
@@ -289,6 +385,7 @@ export function generateBottomGraph (container, data) {
 			d3.selectAll(`.axisText${i}`)
 				.attr("font-weight", 1000)
 		})
+		// Unhighlight direction
 		.on("mouseout", function() {
 			d3.selectAll(`.stop${i}`)
 				.attr('stroke-width', BAR_STROKE_WIDTH)
@@ -299,14 +396,6 @@ export function generateBottomGraph (container, data) {
 			d3.selectAll(`.axisText${i}`)
 				.attr("font-weight", 0)
 		});
-		bars.append("text")
-			.text(`${data.delay[i]}`)
-			.attr('x', x + xScale.bandwidth() + 5)
-			.attr('y', y - 10)
-			.attr('fill', 'black')
-			.attr('class', `stop${i} textValue`)
-			.attr('font-size', 14)
-			.style('visibility', 'hidden')
 		previousDelay = data.delay[i]
   }
 
@@ -393,6 +482,8 @@ export function generateBarGraph (container, data) {
 	.attr('id', 'vertLine')
 	var bars = svg.append('g')
 	.attr('id', 'bars')
+	var hoverBars = svg.append('g')
+	.attr('id', 'hoverBars')
   for (let i = 0; i < data.amounts.length; i++) {
     const x = xScale(data.stops[i])
     const y = yScale(data.amounts[i])
@@ -408,23 +499,40 @@ export function generateBarGraph (container, data) {
 			.style('visibility', 'hidden');
 
     bars.append('rect')
+		.attr('x', x)
+		.attr('width', xScale.bandwidth())
+		.attr('height', yScale(0) - y)
+		.attr('y', y)
+		.attr('fill', BAR_FILL_COLOR)
+		.attr('stroke', BAR_STROKE_COLOR)
+		.attr('stroke-width', BAR_STROKE_WIDTH)
+		.attr('class', `stop${i}`)
+		bars.append("text")
+			.text(`${data.amounts[i]}`)
+			.attr('x', x + xScale.bandwidth() + 5)
+			.attr('y', y -10)
+			.attr('fill', 'black')
+			.attr('class', `stop${i} textValue`)
+			.attr('font-size', 14)
+			.style('visibility', 'hidden')
+
+		hoverBars.append('rect')
 			.attr('x', x)
 			.attr('width', xScale.bandwidth())
-      .attr('height', yScale(0) - y)
-      .attr('y', y)
-      .attr('fill', BAR_FILL_COLOR)
-      .attr('stroke', BAR_STROKE_COLOR)
-      .attr('stroke-width', BAR_STROKE_WIDTH)
-			.attr('class', `stop${i}`)
-			.on("mouseover", function(d) {
+			.attr('height', yScale(0) - yScale(Math.max(...data.amounts)))
+			.attr('y', yScale(Math.max(...data.amounts)))
+			.attr('fill', 'transparent')
+			// Highlight direction
+			.on('mouseover', () => {
 				d3.selectAll(`.stop${i}`).raise()
-					.attr('stroke-width', BAR_STROKE_WIDTH * 2)
+				.attr('stroke-width', BAR_STROKE_WIDTH * 2)
 				d3.selectAll(`.stop${i}.line`)
 					.style('visibility', 'visible')
 				d3.selectAll(`.stop${i}.textValue`)
 					.style('visibility', 'visible')
 				d3.selectAll(`.axisText${i}`)
-				.attr("font-weight", 1000)
+					.attr("font-weight", 1000)
+			// Unhighlight direction
 			})
 			.on("mouseout", function() {
 				d3.selectAll(`.stop${i}`)
@@ -435,15 +543,7 @@ export function generateBarGraph (container, data) {
 					.style('visibility', 'hidden')
 				d3.selectAll(`.axisText${i}`)
 					.attr("font-weight", 0)
-			});
-		bars.append("text")
-			.text(`${data.amounts[i]}`)
-			.attr('x', x + xScale.bandwidth() + 5)
-			.attr('y', y -10)
-			.attr('fill', 'black')
-			.attr('class', `stop${i} textValue`)
-			.attr('font-size', 14)
-			.style('visibility', 'hidden')
+			})
   }
 
   // Draw Title
