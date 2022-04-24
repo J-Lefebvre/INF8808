@@ -21,7 +21,6 @@ import * as groupedQuantile from './scripts/grouped-quantile.js'
   helper.setCanvasSize(svgSize.width, svgSize.height)
   helper.generateMapG(svgSize.width, svgSize.height)
   helper.generateMarkerG(svgSize.width, svgSize.height)
-  helper.appendGraphLabels(d3.select('.main-svg'))
   helper.initPanelDiv()
 
   // Solution temporaire, éventuellement l'utilisateur peut choisir la période qui l'intéresse, s'il veut inclure les week-end et les fériés.

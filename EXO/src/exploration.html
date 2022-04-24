@@ -37,9 +37,9 @@
                 <option value="Lafontaine Via Gare  Saint-Jérôme">Gare Saint Jérome</option>
               </select>
               <p class="col">Indicateur :</p>
-              <select class="col form-select" aria-label="Indicateur">
-                <option selected value="Combo">Combo</option>
-                <option value="Ponctualité">Ponctualité</option>
+              <select class="col form-select" id="indicateur" aria-label="Indicateur">
+                <option selected value="IndiceMixte">Combo</option>
+                <option value="Ponctualite">Ponctualité</option>
                 <option value="Achalandage">Achalandage</option>
               </select>
             </div>
@@ -81,7 +81,7 @@
                 <svg id="heatmap-svg"></svg>
               </div>
               <div id="heatmap-tooltip">
-                <div id="heatmap-tooltip-aligner">
+                <div id="heatmap-tooltip-aligner" style="visibility:hidden;">
                   <div id="heatmap-tooltip-text">
                     text
                   </div>

@@ -115,9 +115,12 @@ export function updateDirectionList(vizData, line) {
 export function updateTrajectList(vizData, line, direction) {
 	var posLigne = vizData.findIndex(e => e.ligne === line)
 	var posGirouette = vizData[posLigne].girouettes.findIndex(e => e.girouette === direction)
+	
+	var listTrajets = vizData[posLigne].girouettes[posGirouette].voyages.map(a => a.voyage).sort((a, b) => (a - b));
+	
 	var options = "";
-	for (var i = 0; i < vizData[posLigne].girouettes[posGirouette].voyages.length; i++) {
-		var trajectNumber = vizData[posLigne].girouettes[posGirouette].voyages[i].voyage;
+	for (var i = 0; i < listTrajets.length; i++) {
+		var trajectNumber = listTrajets[i];
 		if (i == 0){
 			options += `<option selected value=${trajectNumber}>${trajectNumber}</option>`;
 			vizData.currentTraject = trajectNumber;
@@ -125,6 +128,7 @@ export function updateTrajectList(vizData, line, direction) {
 			options += `<option value=${trajectNumber}>${trajectNumber}</option>`;
 		}
 	}
+	
 	document.getElementById("traject-dropdown").innerHTML = options;
 }
 

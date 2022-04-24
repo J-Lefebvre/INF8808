@@ -23,7 +23,6 @@ import bootstrap from 'bootstrap'
   helper.setCanvasSize(svgSize.width, svgSize.height)
   helper.generateMapG(svgSize.width, svgSize.height)
   helper.generateMarkerG(svgSize.width, svgSize.height)
-  helper.appendGraphLabels(d3.select('.main-svg'))
   helper.initPanelDiv()
 
   // Solution temporaire, éventuellement l'utilisateur peut choisir la période qui l'intéresse, s'il veut inclure les week-end et les fériés.
@@ -56,8 +55,12 @@ import bootstrap from 'bootstrap'
       //console.log(csvData)
       preprocess.addDayType(csvData)
       preprocess.aggregateData(csvData, vizData, startDate, endDate, typeJour, ferie)
-      heatmap.drawHeatmap(vizData, 9, 'Lafontaine Via Gare  Saint-Jérôme', 'moyMinutesEcart')
-      window.addEventListener('resize', () => { heatmap.drawHeatmap(vizData, 9, 'Lafontaine Via Gare  Saint-Jérôme', 'moyMinutesEcart') })
+      var strIndicateur = document.getElementById("indicateur").value;
+      heatmap.drawHeatmap(vizData, 9, 'Lafontaine Via Gare  Saint-Jérôme', strIndicateur)
+      window.addEventListener('resize', () => { 
+        strIndicateur = document.getElementById("indicateur").value;
+        heatmap.drawHeatmap(vizData, 9, 'Lafontaine Via Gare  Saint-Jérôme',strIndicateur);
+       })
       candlestick.generateViz2(vizData)
 
     })

@@ -43,40 +43,18 @@ export function setCanvasSize (width, height) {
     .attr('height', height)
 }
 
-/**
- * Appends the labels for the graph.
- *
- * @param {*} g The d3 Selection of the graph's g SVG element
- */
-export function appendGraphLabels (g) {
-  /* g.append('text')
-    .text('Achalandage et ponctualité des lignes de bus 9 et 22 de la couronne Nord de Montréal')
-    .attr('class', 'title')
-    .attr('fill', '#000000')
-    .attr('font-family', 'myriad-pro')
-    .attr('font-size', 28)
-    .attr('transform', 'translate(50, 50)')
-
-  g.append('text')
-    .text('Sous-titre')
-    .attr('class', 'title')
-    .attr('fill', '#000000')
-    .attr('font-family', 'myriad-pro')
-    .attr('font-size', 18)
-    .attr('transform', 'translate(50, 85)') */
-}
 
 /**
  * Initializes the div which will contain the information panel.
  */
 export function initPanelDiv () {
-  d3.select('.graph')
+  /*d3.select('.graph')
     .append('div')
     .attr('id', 'panel')
     .style('width', '215px')
     .style('border', '1px solid black')
     .style('padding', '10px')
-    .style('visibility', 'hidden')
+    .style('visibility', 'hidden')*/
 }
 
 /**

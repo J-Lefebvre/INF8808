@@ -395,6 +395,8 @@ export function selectTicks (arret, voyage) {
     .attr('opacity', 1.0)
 
   setTooltip(arret, voyage)
+  d3.select("#heatmap-tooltip-aligner")
+    .style('visibility', 'visible');
 }
 
 /**
@@ -412,6 +414,8 @@ export function unselectTicks (arret, voyage) {
 
     .attr('font-size', '10px')
     .attr('opacity', 0.0)
+  d3.select("#heatmap-tooltip-aligner")
+    .style('visibility', 'hidden');
 }
 
 // ===================== LEGEND =====================
@@ -522,5 +526,8 @@ export function draw (x, y, height, width, fill, colorScale) {
 // ===================== TOOLTIP =====================
 
 function setTooltip(arret, voyage) {
-  const tooltip = document.getElementById('heatmap-tooltip-text').innerHTML = `Arrêt: ${arret}<br> Voyage: ${voyage}`
+  const tooltip = document.getElementById('heatmap-tooltip-text')
+  tooltip.innerHTML = `Arrêt: ${arret}<br> Voyage: ${voyage}`
+  d3.select("#heatmap-tooltip-aligner")
+    .style('visibility', 'hidden');
 }
