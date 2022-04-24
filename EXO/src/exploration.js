@@ -57,7 +57,8 @@ import bootstrap from 'bootstrap'
       preprocess.addDayType(csvData)
       preprocess.aggregateData(csvData, vizData, startDate, endDate, typeJour, ferie)
       heatmap.drawHeatmap(vizData, 9, 'Lafontaine Via Gare  Saint-Jérôme', 'moyMinutesEcart')
-      candlestick.generateViz2(vizData);
+      window.addEventListener('resize', () => { heatmap.drawHeatmap(vizData, 9, 'Lafontaine Via Gare  Saint-Jérôme', 'moyMinutesEcart') })
+      candlestick.generateViz2(vizData)
 
     })
   }

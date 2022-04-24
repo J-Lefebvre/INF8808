@@ -43,8 +43,8 @@
                 <option value="Achalandage">Achalandage</option>
               </select>
             </div>
-            <div class="row align-items-left"><svg class="help" xmlns="http://www.w3.org/2000/svg" width="30" height="19" fill="#484848" class="bi bi-info-circle" style="margin-left: auto; 
-            margin-right: 3;display:flex;margin-top:3em;margin-bottom:3em" data-toggle="modal" data-target="#modalHeatmap" viewBox="0 0 16 16">
+            <div><svg class="help" xmlns="http://www.w3.org/2000/svg" width="30" height="19" fill="#484848" class="bi bi-info-circle" style="margin-left: auto; 
+            margin-right: 3;display:flex;margin-top:1em;margin-bottom:1em" data-toggle="modal" data-target="#modalHeatmap" viewBox="0 0 16 16">
               <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
               <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/>
             </svg>
@@ -71,17 +71,20 @@
               </div>
             </div>
           </div>
-        </div> </div><br>
-        <br>
-        <br>
+        </div> </div>
           <div class="viz-container">
-            <div class="graph" id="map">
+            <!--<div class="graph" id="map">
               <svg class="main-svg"></svg>
+            </div>-->
+            <div id="viz1-container">
+              <div id="heatmap-svg-container">
+                <svg id="heatmap-svg"></svg>
+              </div>
+              <div id="heatmap-tooltip">
+                heatmap-tooltip
+              </div>
             </div>
-            <br>
-            <br>
-            <br><br>
-            <br>
+            <hr/>
             <div class="container">
               <div class="row align-items-left form-group" >
               <p style="margin-left:-10em;max-width: 18%;" class="col">Trajet :</p>
@@ -95,7 +98,7 @@
               </select>
             </div>
             <div class="row align-items-left"><svg class="help" xmlns="http://www.w3.org/2000/svg" width="30" height="19" fill="#484848" class="bi bi-info-circle" style="margin-left: auto; 
-              margin-right: 3;display:flex;margin-top:1em;margin-bottom:4em" data-toggle="modal" data-target="#modalCandle" viewBox="0 0 16 16">
+              margin-right: 3;display:flex;margin-top:0em;margin-bottom:1em" data-toggle="modal" data-target="#modalCandle" viewBox="0 0 16 16">
                 <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
                 <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/>
               </svg>
