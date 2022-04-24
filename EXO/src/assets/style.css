@@ -78,6 +78,11 @@ button {
     height: 100%;
 }
 
+#heatmap-tooltip-aligner {
+    border: 1px black solid;
+    padding: 10px;
+}
+
 #marker-g circle {
     cursor: pointer;
 }

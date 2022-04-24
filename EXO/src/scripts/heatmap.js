@@ -186,6 +186,8 @@ export function setSizing () {
   }
 
   helper.setCanvasSize(svgSize.width, svgSize.height)
+
+  document.getElementById('heatmap-tooltip-aligner').style.marginTop = MARGIN.top + 'px'
 }
 
 // AXIS
@@ -391,6 +393,8 @@ export function selectTicks (arret, voyage) {
 
     .attr('font-size', '10px')
     .attr('opacity', 1.0)
+
+  setTooltip(arret, voyage)
 }
 
 /**
@@ -515,4 +519,8 @@ export function draw (x, y, height, width, fill, colorScale) {
     })
 }
 
-// ===================== TITLE =====================
+// ===================== TOOLTIP =====================
+
+function setTooltip(arret, voyage) {
+  const tooltip = document.getElementById('heatmap-tooltip-text').innerHTML = `Arrêt: ${arret}<br> Voyage: ${voyage}`
+}
