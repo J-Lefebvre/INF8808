@@ -83,7 +83,7 @@ export function drawHeatmap (vizData, ligne, girouette) {
       liste = 'minutesEcartClient'
       break
   }
-
+ 
   var posLigne = vizData.findIndex(e => e.ligne === ligne)
   var posGirouette = vizData[posLigne].girouettes.findIndex(e => e.girouette === girouette)
   var dataUtiles = vizData[posLigne].girouettes[posGirouette]
@@ -137,7 +137,7 @@ function flatten_Data (dataStructurees, nom_moy, nom_liste) {
       const codeArret = a.codeArret
       const nomArret = a.nomArret
       const moyenne = a[nom_moy]
-      const liste = a[nom_liste]
+      const liste = Array. from(a[nom_liste].values())
       flattenData.push({
         voyage: numVoyage,
         codeArret: codeArret,
@@ -352,7 +352,7 @@ export function setRectHandler (xScale, yScale) {
   d3.selectAll(' .rectangleChaleur')
     .on('mouseenter', function (d) {
       rectSelected(this)
-      selectTicks(d.nomArret, d.voyage)
+      selectTicks(d.nomArret, d.voyage, d.codeArret, d.moyenne, d.liste)
     })
     .on('mouseleave', function (d) {
       unselectTicks(d.nomArret, d.voyage)
@@ -379,7 +379,7 @@ export function rectUnselected (element) {
  * @param {string} arret
  * @param {number} voyage
  */
-export function selectTicks (arret, voyage) {
+export function selectTicks (arret, voyage, numArret, moyenne, listeData) {
   // console.log(arret);
 
   // console.log(arret.replace(/[^a-zA-Z0-9]/g,''));
@@ -395,7 +395,7 @@ export function selectTicks (arret, voyage) {
     .attr('font-size', '10px')
     .attr('opacity', 1.0)
 
-  setTooltip(arret, voyage)
+  setTooltip(arret, voyage, numArret, moyenne, listeData)
   d3.select("#heatmap-tooltip-aligner")
     .style('visibility', 'visible');
 }
@@ -526,9 +526,15 @@ export function draw (x, y, height, width, fill, colorScale) {
 
 // ===================== TOOLTIP =====================
 
-function setTooltip(arret, voyage) {
+function setTooltip(arret, voyage, numArret, moyenne, listeData) {
   const tooltip = document.getElementById('heatmap-tooltip-text')
-  tooltip.innerHTML = `Arrêt: ${arret}<br> Voyage: ${voyage}`
+  tooltip.innerHTML = `Arrêt: ${arret}<br> 
+                       Code de l'arret : ${numArret}<br>
+                       Voyage: ${voyage}<br>
+                       Moyenne: ${moyenne.toPrecision(3)}<br>
+                       Dispersion:
+                       `
+  console.log(listeData);
   d3.select("#heatmap-tooltip-aligner")
     .style('visibility', 'hidden');
 }
