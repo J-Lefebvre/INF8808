@@ -61,10 +61,11 @@ let graphSize
  * @param girouette     // le nom de la girouette, type string
  * @param indicateur    // donnee a visualisaer, 1 choix pamis [Ponctualite, Achalandage, IndiceMixte]
  */
-export function drawHeatmap (vizData, ligne, girouette, indicateur) {
+export function drawHeatmap (vizData, ligne, girouette) {
   document.getElementById('heatmap-svg').innerHTML = ''
   HEIGHT = document.getElementById('heatmap-svg-container').getBoundingClientRect().height
-  indicateur = 'Ponctualite'
+
+  var indicateur = document.getElementById("indicateur").value;
   var moyenne, liste
   switch (indicateur) {
     case 'Ponctualite' :

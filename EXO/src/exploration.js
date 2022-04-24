@@ -55,12 +55,27 @@ import bootstrap from 'bootstrap'
       //console.log(csvData)
       preprocess.addDayType(csvData)
       preprocess.aggregateData(csvData, vizData, startDate, endDate, typeJour, ferie)
-      var strIndicateur = document.getElementById("indicateur").value;
-      heatmap.drawHeatmap(vizData, 9, 'Lafontaine Via Gare  Saint-Jérôme', strIndicateur)
+     
+      var line = document.getElementById("line-dropdown");
+      var direction = document.getElementById("direction-dropdown");
+      var indicateur = document.getElementById("indicateur");
+      
+      heatmap.drawHeatmap(vizData,parseInt(line.value), direction.value)
       window.addEventListener('resize', () => { 
-        strIndicateur = document.getElementById("indicateur").value;
-        heatmap.drawHeatmap(vizData, 9, 'Lafontaine Via Gare  Saint-Jérôme',strIndicateur);
+        heatmap.drawHeatmap(vizData, parseInt(line.value),  direction.value);
        })
+     /*  line.addEventListener("change", function() {
+        heatmap.drawHeatmap(vizData, parseInt(line.value),  direction.value);
+      });*/
+      direction.addEventListener("DOMSubtreeModified", function() {
+        heatmap.drawHeatmap(vizData, parseInt(line.value),  direction.value);
+      });
+      direction.addEventListener("change", function() {
+        heatmap.drawHeatmap(vizData, parseInt(line.value),  direction.value);
+      });
+      indicateur.addEventListener("change", function() {
+        heatmap.drawHeatmap(vizData, parseInt(line.value),  direction.value);
+      });
       candlestick.generateViz2(vizData)
 
     })

@@ -11,7 +11,7 @@ const BAR_STROKE_WIDTH = 2
  *
  */
 export function generateViz2 (data) {
-	console.log(data)
+	//console.log(data)
 	//set onload dropdown values
 	data.currentLine = parseInt(d3.select("#line-dropdown").node().value);
 	data.currentDirection = d3.select("#direction-dropdown").node().value;
