@@ -209,7 +209,7 @@ export function appendAxes (g) {
  */
 export function createXScale (flattenData) {
   // obtenir tous les arrets dans l'ordre
-  const xScale = d3.scaleBand().padding(0.05)
+  const xScale = d3.scaleBand()
   const map_arret = d3.map()
   flattenData.forEach(a => map_arret.set(a.sequenceArret, a.nomArret))
   const arrets = map_arret.keys()
@@ -225,12 +225,11 @@ export function createXScale (flattenData) {
  * retourne l'echelle des Y, correspondant aux n° de voyage
  */
 export function createYScale (dataStructurees) {
-  const yScale = d3.scaleBand().padding(0.05)
-
   const voyages = (dataStructurees.voyages).map(v => v.voyage)
   const dom = d3.extent(voyages)
-  yScale.domain(d3.range(dom[0], dom[1])).range([0, graphSize.height])
-
+  const yScale = d3.scaleBand()
+    .domain(d3.range(dom[0], dom[1]))
+    .range([0, graphSize.height])
   return yScale
 };
 
@@ -286,7 +285,7 @@ export function updateRects (xScale, yScale, colorScale) {
       return yScale(d.voyage)
     })
     .attr('width', xScale.bandwidth())
-    .attr('height', yScale.bandwidth())
+    .attr('height', yScale.bandwidth() * 2)
     .attr('fill', function (d) {
       return colorScale(d.moyenne)
     })
