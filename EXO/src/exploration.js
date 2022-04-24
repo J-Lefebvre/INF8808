@@ -23,7 +23,6 @@ import bootstrap from 'bootstrap'
   helper.setCanvasSize(svgSize.width, svgSize.height)
   helper.generateMapG(svgSize.width, svgSize.height)
   helper.generateMarkerG(svgSize.width, svgSize.height)
-  helper.initPanelDiv()
 
   // Solution temporaire, éventuellement l'utilisateur peut choisir la période qui l'intéresse, s'il veut inclure les week-end et les fériés.
   const startDate = new Date('2021-09-01')
