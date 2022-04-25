@@ -62,7 +62,8 @@ let graphSize
  * @param indicateur    // donnee a visualisaer, 1 choix pamis [Ponctualite, Achalandage, IndiceMixte]
  */
 export function drawHeatmap (vizData, ligne, girouette) {
-  document.getElementById('heatmap-svg').innerHTML = ''
+  d3.select("#heatmap-svg").selectAll().remove()
+  //document.getElementById('heatmap-svg').innerHTML = ''
   HEIGHT = document.getElementById('heatmap-svg-container').getBoundingClientRect().height
 
   var indicateur = document.getElementById("indicateur").value;
@@ -126,7 +127,7 @@ export function drawHeatmap (vizData, ligne, girouette) {
  */
 function flatten_Data (dataStructurees, nom_moy, nom_liste) {
   const flattenData = [];
-
+  if (typeof dataStructurees !== 'undefined'){
   (dataStructurees.voyages).forEach((v) => {
     const numVoyage = v.voyage;
     (v.arrets).forEach((a) => {
@@ -143,7 +144,7 @@ function flatten_Data (dataStructurees, nom_moy, nom_liste) {
         liste: liste
       })
     })
-  })
+  })}
   return flattenData
 };
 
@@ -586,7 +587,7 @@ let min=Math.min(listeData)
       
   svg.append("g")
       .call(d3.axisLeft(y_scale));
-      
+
   svg.selectAll("rect")
     .data(L)
       .enter()

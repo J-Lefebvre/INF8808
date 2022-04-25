@@ -67,7 +67,11 @@ import bootstrap from 'bootstrap'
         heatmap.drawHeatmap(vizData, parseInt(line.value),  direction.value);
       });*/
       direction.addEventListener("DOMSubtreeModified", function() {
-        heatmap.drawHeatmap(vizData, parseInt(line.value),  direction.value);
+        if (line.value=="9"){
+          heatmap.drawHeatmap(vizData, parseInt(line.value), "Lafontaine Via Gare  Saint-Jérôme");}
+        else{
+          heatmap.drawHeatmap(vizData, parseInt(line.value), "Gare Sainte-Thérèse");
+        }
       });
       direction.addEventListener("change", function() {
         heatmap.drawHeatmap(vizData, parseInt(line.value),  direction.value);
