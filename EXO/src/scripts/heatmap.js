@@ -66,27 +66,31 @@ export function drawHeatmap (vizData, ligne, girouette) {
   HEIGHT = document.getElementById('heatmap-svg-container').getBoundingClientRect().height
 
   var indicateur = document.getElementById("indicateur").value;
-  var moyenne, liste
+  var moyenne, liste, nomIndicateur
   switch (indicateur) {
     case 'Ponctualite' :
       moyenne = 'moyMinutesEcart'
       liste = 'minutesEcart'
+      nomIndicateur = 'de la ponctualité'
       break
 
     case 'Achalandage' :
       moyenne = 'moyNClients'
       liste = 'nClients'
+      nomIndicateur = "de l'achalandage"
       break
 
     case 'IndiceMixte' :
       moyenne = 'moyMinutesEcartClient'
       liste = 'minutesEcartClient'
+      nomIndicateur = "de l'indice combo"
       break
   }
  
   var posLigne = vizData.findIndex(e => e.ligne === ligne)
   var posGirouette = vizData[posLigne].girouettes.findIndex(e => e.girouette === girouette)
   var dataUtiles = vizData[posLigne].girouettes[posGirouette]
+  console.log(dataUtiles);
   var flattenData = flatten_Data(dataUtiles, moyenne, liste)
 
   const g = generateG()
@@ -96,7 +100,6 @@ export function drawHeatmap (vizData, ligne, girouette) {
   const Yscale = createYScale(dataUtiles)
   const colorScale = createColorScale(flattenData)
 
-  // console.log(Xscale)
   appendRects(flattenData)
   updateRects(Xscale, Yscale, colorScale)
 
@@ -106,19 +109,12 @@ export function drawHeatmap (vizData, ligne, girouette) {
 
   setRectHandler(Xscale, Yscale)
 
-  initGradient(colorScale)
+  initGradient(colorScale, nomIndicateur)
   initLegendBar()
   initLegendAxis()
   draw(MARGIN.left / 2, MARGIN.top + 5, graphSize.height - 10, 15, 'url(#gradient)', colorScale)
-/*
-  for (var v = 0; v < vizData[posLigne].girouettes[posGirouette].voyages.length; v++) {
-    for (var a = 0; a < vizData[posLigne].girouettes[posGirouette].voyages[v].arrets.length; a++) {
-      var valueSquare = vizData[posLigne].girouettes[posGirouette].voyages[v].arrets[a][indicateur]
-      //console.log(valueSquare)
-    }
-  }
-  */
 };
+
 
 // ===================== PROCESS DATA =====================
 
@@ -173,7 +169,6 @@ export function generateG () {
  *   This function handles the graph's sizing.
  */
 export function setSizing () {
-  // console.log(d3.select('.graph'))
   bounds = d3.select('#heatmap-svg-container').node().getBoundingClientRect()
 
   svgSize = {
@@ -215,6 +210,7 @@ export function createXScale (flattenData) {
   const xScale = d3.scaleBand()
   const map_arret = d3.map()
   flattenData.forEach(a => map_arret.set(a.sequenceArret, a.nomArret))
+  console.log(map_arret)
   const arrets = map_arret.keys()
   const arret_sort = arrets.sort((a, b) => d3.ascending(+a, +b))
   const nom_arret_sort = [...arret_sort.map(a => map_arret.get(a))]
@@ -282,17 +278,27 @@ export function updateRects (xScale, yScale, colorScale) {
   d3.select('#' + ID_VIZ)
     .selectAll('rect')
     .attr('x', function (d) {
-      return xScale(d.nomArret)
+      if (typeof xScale(d.nomArret) !== 'undefined') 
+      { return xScale(d.nomArret)}
+      else {return -1}
     })
     .attr('y', function (d) {
-      return yScale(d.voyage)
+      if (typeof xScale(d.nomArret) !== 'undefined') 
+      {  return yScale(d.voyage)}
+      else {return -1}
+      
     })
     .attr('width', xScale.bandwidth())
     .attr('height', yScale.bandwidth() * 2)
     .attr('fill', function (d) {
       return colorScale(d.moyenne)
     })
-    .attr('opacity', OPACITY)
+    .attr('opacity', function(d) {
+
+      if (typeof xScale(d.nomArret) !== 'undefined') 
+      {return OPACITY}
+      else {return 0};
+    })
     .attr('class', 'rectangleChaleur')
 }
 
@@ -380,18 +386,15 @@ export function rectUnselected (element) {
  * @param {number} voyage
  */
 export function selectTicks (arret, voyage, numArret, moyenne, listeData) {
-  // console.log(arret);
 
-  // console.log(arret.replace(/[^a-zA-Z0-9]/g,''));
-  d3.select('#' + arret.replace(/[^a-zA-Z0-9]/g, ''))
+  var selection = d3.select('#' + arret.replace(/[^a-zA-Z0-9]/g, ''));
 
-    .attr('font-weight', 1000)
+  selection.attr('font-weight', 1000)
     .attr('font-size', '10px')
     .attr('opacity', 1.0)
+
   d3.select('#v' + voyage)
-
     .attr('font-weight', 1000)
-
     .attr('font-size', '10px')
     .attr('opacity', 1.0)
 
@@ -426,15 +429,16 @@ export function unselectTicks (arret, voyage) {
  * given colorScale.
  *
  * @param {*} colorScale The color scale to use
+ * @param {String} nomIndicateur Nom de l'indicateur visualisé
  */
-export function initGradient (colorScale) {
+export function initGradient (colorScale, nomIndicateur) {
   const svg = d3.select('#heatmap-svg')
 
   svg.append('text')
     .attr('x', (svgSize.width - MARGIN.right - MARGIN.left) / 2 + MARGIN.left)
     .attr('y', MARGIN.top - FONT_SIZE * 2)
     .attr('text-anchor', 'middle')
-    .text('Heatmap')
+    .text('carte de chaleur '+nomIndicateur)
     .attr('font-size', FONT_SIZE)
 
   const defs = svg.append('defs')
@@ -497,12 +501,11 @@ export function draw (x, y, height, width, fill, colorScale) {
     .attr('width', width)
     .attr('fill', fill)
 
-  const step = 5
   const maxValue = csd[csd.length - 1]
   const minValue = csd[0]
+  const step = Math.round((maxValue - minValue ) /16)
   const steps = d3.range(minValue, maxValue, step)
 
-  // console.log(steps)
   const scale = d3.scaleLinear().domain([csd[0], csd[csd.length - 1]]).range([0, height])
   const axis = d3.select('.legend.axis')
 
@@ -534,7 +537,7 @@ function setTooltip(arret, voyage, numArret, moyenne, listeData) {
                        Moyenne: ${moyenne.toPrecision(3)}<br>
                        Dispersion:
                        `
-  console.log(listeData);
+  //console.log(listeData);
   d3.select("#heatmap-tooltip-aligner")
     .style('visibility', 'hidden');
 }
