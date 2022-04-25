@@ -90,7 +90,7 @@ export function drawHeatmap (vizData, ligne, girouette) {
   var posLigne = vizData.findIndex(e => e.ligne === ligne)
   var posGirouette = vizData[posLigne].girouettes.findIndex(e => e.girouette === girouette)
   var dataUtiles = vizData[posLigne].girouettes[posGirouette]
-  console.log(dataUtiles);
+  
   var flattenData = flatten_Data(dataUtiles, moyenne, liste)
 
   const g = generateG()
@@ -210,7 +210,7 @@ export function createXScale (flattenData) {
   const xScale = d3.scaleBand()
   const map_arret = d3.map()
   flattenData.forEach(a => map_arret.set(a.sequenceArret, a.nomArret))
-  console.log(map_arret)
+  
   const arrets = map_arret.keys()
   const arret_sort = arrets.sort((a, b) => d3.ascending(+a, +b))
   const nom_arret_sort = [...arret_sort.map(a => map_arret.get(a))]
@@ -537,7 +537,68 @@ function setTooltip(arret, voyage, numArret, moyenne, listeData) {
                        Moyenne: ${moyenne.toPrecision(3)}<br>
                        Dispersion:
                        `
-  //console.log(listeData);
+  updateHistogram(listeData);
   d3.select("#heatmap-tooltip-aligner")
     .style('visibility', 'hidden');
+}
+function updateHistogram(listeData){
+  var margin = {top: 10, right:10, bottom: 30, left: 30},
+  width = 160 - margin.left - margin.right,
+  height = 120 - margin.top - margin.bottom;
+
+// append the svg object to the body of the page
+d3.select("#heatmap-tooltip-histogram").select("svg").remove()
+var svg = d3.select("#heatmap-tooltip-histogram")
+.append("svg")
+  .attr("width", width + margin.left + margin.right)
+  .attr("height", height + margin.top + margin.bottom)
+.append("g")
+  .attr("transform",
+        "translate(" + margin.left + "," + margin.top + ")");
+
+// get the data
+let max=Math.max(listeData)
+let min=Math.min(listeData)
+  // X axis: scale and draw:
+  var x_scale = d3.scaleBand()
+      .domain(listeData.sort((a, b) => (a - b)))     // can use this instead of 1000 to have the max of data: d3.max(data, function(d) { return +d.price })
+      .range([0, width])
+      .padding(0.3);
+  svg.append("g")
+      .attr("transform", "translate(0," + height + ")")
+      .call(d3.axisBottom().scale(x_scale));
+  var counts={}
+      for (const num of listeData) {
+        counts[num] = counts[num] ? counts[num] + 1 : 1;
+      }
+      var keys = Object.keys(counts);
+    var L=[];
+    for (const k of keys){
+      var obj = {};
+      obj["x"]=parseInt(k);
+      obj["y"]=counts[k];
+      L.push(obj)
+    }
+   
+      
+ var M=L.map(a=>parseInt(a["y"]));
+
+  // Y axis: scale and draw:
+  var y_scale = d3.scaleLinear()
+      .domain([0, Math.max(...M)])
+      .range([height, 0]);
+      
+  svg.append("g")
+  
+      .call(d3.axisLeft(y_scale));
+  // append the bar rectangles to the svg element
+  svg.selectAll("rect")
+    .data(L)
+      .enter()
+      .append("rect")
+        .attr("x",function(d){return x_scale(d.x)})
+        .attr("transform", function(d) { return "translate(" +0+ "," + y_scale(d.y) + ")"; })
+        .attr("width", function(d) { return x_scale.bandwidth() ; })
+        .attr("height", function(d) { return height - y_scale(d.y); })
+        .style("fill", "#5b5b5b")
 }
