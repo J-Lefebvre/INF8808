@@ -438,7 +438,7 @@ export function initGradient (colorScale, nomIndicateur) {
     .attr('x', (svgSize.width - MARGIN.right - MARGIN.left) / 2 + MARGIN.left)
     .attr('y', MARGIN.top - FONT_SIZE * 2)
     .attr('text-anchor', 'middle')
-    .text('carte de chaleur '+nomIndicateur)
+    .text('Carte de chaleur '+nomIndicateur)
     .attr('font-size', FONT_SIZE)
 
   const defs = svg.append('defs')
@@ -535,7 +535,6 @@ function setTooltip(arret, voyage, numArret, moyenne, listeData) {
                        Code de l'arret : ${numArret}<br>
                        Voyage: ${voyage}<br>
                        Moyenne: ${moyenne.toPrecision(3)}<br>
-                       Dispersion:
                        `
   updateHistogram(listeData);
   d3.select("#heatmap-tooltip-aligner")
@@ -546,7 +545,6 @@ function updateHistogram(listeData){
   width = 160 - margin.left - margin.right,
   height = 120 - margin.top - margin.bottom;
 
-// append the svg object to the body of the page
 d3.select("#heatmap-tooltip-histogram").select("svg").remove()
 var svg = d3.select("#heatmap-tooltip-histogram")
 .append("svg")
@@ -556,12 +554,11 @@ var svg = d3.select("#heatmap-tooltip-histogram")
   .attr("transform",
         "translate(" + margin.left + "," + margin.top + ")");
 
-// get the data
 let max=Math.max(listeData)
 let min=Math.min(listeData)
-  // X axis: scale and draw:
+
   var x_scale = d3.scaleBand()
-      .domain(listeData.sort((a, b) => (a - b)))     // can use this instead of 1000 to have the max of data: d3.max(data, function(d) { return +d.price })
+      .domain(listeData.sort((a, b) => (a - b)))   
       .range([0, width])
       .padding(0.3);
   svg.append("g")
@@ -583,15 +580,13 @@ let min=Math.min(listeData)
       
  var M=L.map(a=>parseInt(a["y"]));
 
-  // Y axis: scale and draw:
   var y_scale = d3.scaleLinear()
       .domain([0, Math.max(...M)])
       .range([height, 0]);
       
   svg.append("g")
-  
       .call(d3.axisLeft(y_scale));
-  // append the bar rectangles to the svg element
+      
   svg.selectAll("rect")
     .data(L)
       .enter()
