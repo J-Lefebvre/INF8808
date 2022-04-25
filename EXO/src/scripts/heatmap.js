@@ -62,8 +62,13 @@ let graphSize
  * @param indicateur    // donnee a visualisaer, 1 choix pamis [Ponctualite, Achalandage, IndiceMixte]
  */
 export function drawHeatmap (vizData, ligne, girouette) {
-  d3.select("#heatmap-svg").selectAll().remove()
-  //document.getElementById('heatmap-svg').innerHTML = ''
+  //d3.select("#heatmap-svg").selectAll().remove()
+  document.getElementById("heatmap-svg-container").innerHTML = ''
+
+  d3.select("#heatmap-svg-container")
+    .append("svg")
+    .attr('id',"heatmap-svg");
+
   HEIGHT = document.getElementById('heatmap-svg-container').getBoundingClientRect().height
 
   var indicateur = document.getElementById("indicateur").value;
